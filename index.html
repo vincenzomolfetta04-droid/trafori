@@ -1766,9 +1766,12 @@ async function analizzaHaiku(){
     if(data.descrizione) html+=`<span style="color:var(--ink2)">${esc(data.descrizione)}</span><br>`;
     if(data.prezzo_medio){
       html+=`<br>Stima listino: <b>${fmt(data.prezzo_medio)}</b> <span class="aff aff-${data.affidabilita}">${data.affidabilita}</span>`;
-      if(data.scarto>0) html+=` <span style="color:var(--ink3);font-size:12px">(scarto tra stime: ${data.scarto} €)</span>`;
+      if(data.prezzo_min_st && data.prezzo_max_st && data.prezzo_max_st>data.prezzo_min_st)
+        html+=` <span style="color:var(--ink3);font-size:12px">(range ${fmt(data.prezzo_min_st)}–${fmt(data.prezzo_max_st)})</span>`;
       html+=`<br><button class="btn btn-sm" style="margin-top:8px" onclick="usaPrezzo(${data.prezzo_medio},'Stima AI foto')">Usa questo prezzo →</button>`;
     } else { html+='<br>Prezzo non stimato — inseriscilo a mano.'; }
+    if(data.fascia_brand) html+=`<br><span style="font-size:11px;background:var(--bg3,#eee);color:var(--ink2);padding:2px 7px;border-radius:5px">fascia: ${esc(data.fascia_brand)}</span>`;
+    if(data.ragionamento) html+=`<div style="margin-top:8px;padding:8px 10px;background:var(--bg3,#f5f4f0);border-radius:8px;font-size:12px;color:var(--ink2);line-height:1.5">🧠 ${esc(data.ragionamento)}</div>`;
     if(data.note) html+=`<br><span style="color:var(--ink3);font-size:12px">${esc(data.note)}</span>`;
     setMsg('msg-analisi','msg-ok',html);
   }catch(e){ setMsg('msg-analisi','msg-err','Server non raggiungibile: '+(e.message||e)); }
