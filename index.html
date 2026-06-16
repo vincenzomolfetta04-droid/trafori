@@ -606,6 +606,7 @@ function acInput(inputId,tipo){
   const exact=q&&all.some(v=>v.valore_norm===q);
   if(q&&!exact) html+=`<div class="ac-item new" onmousedown="acCreate('${inputId}','${tipo}')"><span>Crea «${esc(inp.value.trim())}»</span><span class="tag">nuovo</span></div>`;
   list.innerHTML=html; list.classList.toggle('show',html.length>0);
+  if(FILL_IDS.indexOf(inputId)>=0) markFilled(inp);
 }
 function acPick(inputId,valore){ $(inputId).value=valore; $('ac-'+inputId).classList.remove('show'); const el=$(inputId); if(el) markFilled(el); }
 async function acCreate(inputId,tipo){
@@ -662,7 +663,12 @@ const FILL_IDS=['brand','codiceBrand','categoria','genere','taglia','mis_spalle'
 function markFilled(el){ if(!el) return; el.classList.toggle('filled',(el.value||'').trim()!==''); }
 function applyFilledAll(){ FILL_IDS.forEach(id=>{ const el=$(id); if(el) markFilled(el); }); }
 let filledAttached=false;
-function attachFilled(){ if(filledAttached) return; filledAttached=true; FILL_IDS.forEach(id=>{ const el=$(id); if(el) el.addEventListener('input',()=>markFilled(el)); }); }
+function attachFilled(){
+  if(filledAttached) return; filledAttached=true;
+  const handler=e=>{ if(e.target && FILL_IDS.indexOf(e.target.id)>=0) markFilled(e.target); };
+  document.addEventListener('input',handler);
+  document.addEventListener('change',handler);
+}
 
 /* =====================================================================
    MODE / STEP 1 / STEP 2
