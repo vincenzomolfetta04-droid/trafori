@@ -606,7 +606,7 @@ function acInput(inputId,tipo){
   const exact=q&&all.some(v=>v.valore_norm===q);
   if(q&&!exact) html+=`<div class="ac-item new" onmousedown="acCreate('${inputId}','${tipo}')"><span>Crea «${esc(inp.value.trim())}»</span><span class="tag">nuovo</span></div>`;
   list.innerHTML=html; list.classList.toggle('show',html.length>0);
-  if(FILL_IDS.indexOf(inputId)>=0) markFilled(inp);
+  if(FILL_ALL.indexOf(inputId)>=0) markFilled(inp);
 }
 function acPick(inputId,valore){ $(inputId).value=valore; $('ac-'+inputId).classList.remove('show'); const el=$(inputId); if(el) markFilled(el); }
 async function acCreate(inputId,tipo){
@@ -660,12 +660,14 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.ac')) document.que
    CAMPI VERDI QUANDO COMPILATI
    ===================================================================== */
 const FILL_IDS=['brand','codiceBrand','categoria','genere','taglia','mis_spalle','mis_lunghezza','mis_extra','colore','materiale','fit','stagione','listino','costo','fornitore','difettoTesto'];
+const Q_IDS=['q-brand','q-codice','q-taglia','q-mspalle','q-mlung','q-mextra','q-difetto'];
+const FILL_ALL=FILL_IDS.concat(Q_IDS);
 function markFilled(el){ if(!el) return; el.classList.toggle('filled',(el.value||'').trim()!==''); }
 function applyFilledAll(){ FILL_IDS.forEach(id=>{ const el=$(id); if(el) markFilled(el); }); }
 let filledAttached=false;
 function attachFilled(){
   if(filledAttached) return; filledAttached=true;
-  const handler=e=>{ if(e.target && FILL_IDS.indexOf(e.target.id)>=0) markFilled(e.target); };
+  const handler=e=>{ if(e.target && FILL_ALL.indexOf(e.target.id)>=0) markFilled(e.target); };
   document.addEventListener('input',handler);
   document.addEventListener('change',handler);
 }
@@ -678,7 +680,7 @@ function setMode(m){
   $('mode-1').classList.toggle('on',m===1); $('mode-2').classList.toggle('on',m===2);
   $('step1').classList.toggle('hidden',m!==1); $('step2').classList.toggle('hidden',m!==2);
   $('nuovo-titolo').textContent=m===1?'Cattura rapida':'Completa scheda';
-  if(m===1){ if(!step1TRF) reserveTRF(); else mostraTRF(step1TRF); renderThumbs(); }
+  if(m===1){ if(!step1TRF) reserveTRF(); else mostraTRF(step1TRF); renderThumbs(); Q_IDS.forEach(id=>{ const el=$(id); if(el) markFilled(el); }); }
   else { renderTodo(); applyFilledAll(); if(!editingTRF) $('trf-pill').textContent='TRF —'; }
 }
 function mostraTRF(t){ $('trf-pill').textContent=t||'TRF —'; $('trf-hanger').textContent=t||'il TRF'; }
@@ -829,7 +831,7 @@ async function salvaStep1(){
   const { error } = await sb.from('articoli').insert(rec);
   if(error){ toast('Errore: '+error.message); return; }
   toast('Salvato '+trf);
-  ['q-brand','q-codice','q-taglia','q-mspalle','q-mlung','q-mextra','q-difetto'].forEach(id=>$(id).value='');
+  ['q-brand','q-codice','q-taglia','q-mspalle','q-mlung','q-mextra','q-difetto'].forEach(id=>{ const el=$(id); if(el){ el.value=''; markFilled(el); } });
   condQuick=null; [...$('seg-cond1').children].forEach(x=>x.className='');
   photos1=[]; renderThumbs();
   resetStep2();
@@ -1724,8 +1726,64 @@ function apriSheet(){ $('sheet-bg').classList.add('show'); $('sheet').classList.
 function chiudiSheet(){ $('sheet-bg').classList.remove('show'); $('sheet').classList.remove('show'); }
 
 /* AI placeholder (prossimo giro: funzioni server + chiave centralizzata) */
-async function analizzaHaiku(){ setMsg('msg-analisi','msg-warn','Le stime AI dalla foto si attivano nel prossimo giro (funzione server + chiave). Per ora inserisci il listino a mano.'); }
-async function cercaOnline(){ setMsg('msg-analisi','msg-warn','La ricerca listino online si attiva nel prossimo giro. Per ora inserisci il listino a mano.'); }
+async function fotoB64(){
+  const arr=(mode===1?photos1:photos2);
+  const p=arr.find(x=>x.blob) || arr.find(x=>x.dataUrl&&x.dataUrl.indexOf('data:')===0) || arr.find(x=>x.url);
+  if(!p) return null;
+  try{
+    if(!p.blob && p.dataUrl && p.dataUrl.indexOf('data:')===0){
+      const m=p.dataUrl.match(/^data:([^;]+);base64,(.*)$/);
+      if(m) return { b64:m[2], media_type:m[1] };
+    }
+    let blob=p.blob;
+    if(!blob){ const resp=await fetch(p.url||p.dataUrl); blob=await resp.blob(); }
+    const mt=blob.type||'image/jpeg';
+    const b64=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(',')[1]); r.onerror=rej; r.readAsDataURL(blob); });
+    return { b64, media_type:mt };
+  }catch(_){ return null; }
+}
+
+async function analizzaHaiku(){
+  setMsg('msg-analisi','msg-load','<div class="spinner"></div> Analisi foto con AI (3 stime)…');
+  const img=await fotoB64();
+  const body={ action:'analizza',
+    brand:$('brand').value.trim(), categoria:$('categoria').value.trim(), genere:$('genere').value.trim(),
+    colore:$('colore').value.trim(), taglia:$('taglia').value.trim(), materiale:$('materiale').value.trim(),
+    codice:$('codiceBrand').value.trim() };
+  if(img){ body.image_b64=img.b64; body.media_type=img.media_type; }
+  try{
+    const { data, error } = await sb.functions.invoke('ai-prezzi',{ body });
+    if(error){ setMsg('msg-analisi','msg-err','Errore: '+(error.message||error)); return; }
+    if(data.error){ setMsg('msg-analisi','msg-err','Errore: '+data.error); return; }
+    if(data.brand && !$('brand').value){ $('brand').value=data.brand; markFilled($('brand')); }
+    let html='<b>Analisi completata</b>'+(data.n_stime?` <span style="color:var(--ink3)">(media di ${data.n_stime} stime)</span>`:'')+'<br>';
+    if(data.descrizione) html+=`<span style="color:var(--ink2)">${esc(data.descrizione)}</span><br>`;
+    if(data.prezzo_medio){
+      html+=`<br>Stima listino: <b>${fmt(data.prezzo_medio)}</b> <span class="aff aff-${data.affidabilita}">${data.affidabilita}</span>`;
+      if(data.scarto>0) html+=` <span style="color:var(--ink3);font-size:12px">(scarto tra stime: ${data.scarto} €)</span>`;
+      html+=`<br><button class="btn btn-sm" style="margin-top:8px" onclick="usaPrezzo(${data.prezzo_medio},'Stima AI foto')">Usa questo prezzo →</button>`;
+    } else { html+='<br>Prezzo non stimato — inseriscilo a mano.'; }
+    if(data.note) html+=`<br><span style="color:var(--ink3);font-size:12px">${esc(data.note)}</span>`;
+    setMsg('msg-analisi','msg-ok',html);
+  }catch(e){ setMsg('msg-analisi','msg-err','Server non raggiungibile: '+(e.message||e)); }
+}
+
+async function cercaOnline(){
+  setMsg('msg-analisi','msg-load','<div class="spinner"></div> Ricerca listino online…');
+  const brand=$('brand').value.trim(), categoria=$('categoria').value.trim(), codice=$('codiceBrand').value.trim();
+  const query=[brand,codice,categoria].filter(Boolean).join(' ');
+  try{
+    const { data, error } = await sb.functions.invoke('ai-prezzi',{ body:{ action:'cerca', brand, categoria, query } });
+    if(error){ setMsg('msg-analisi','msg-err','Errore: '+(error.message||error)); return; }
+    if(data.error){ setMsg('msg-analisi','msg-err','Errore: '+data.error); return; }
+    if(data.prezzo_medio){
+      setMsg('msg-analisi','msg-ok',
+        `Trovato online: <b>${fmt(data.prezzo_medio)}</b> <span class="aff aff-${data.affidabilita}">${data.affidabilita}</span><br>`+
+        (data.fonte?`<span style="color:var(--ink2)">${esc(data.fonte)}</span><br>`:'')+
+        `<button class="btn btn-sm" style="margin-top:8px" onclick="usaPrezzo(${data.prezzo_medio},'Ricerca web')">Usa questo prezzo →</button>`);
+    } else { setMsg('msg-analisi','msg-warn','Prezzo non trovato online — inseriscilo a mano.'); }
+  }catch(e){ setMsg('msg-analisi','msg-err','Server non raggiungibile: '+(e.message||e)); }
+}
 function usaPrezzo(p,fonte){ $('listino').value=p.toFixed(2); $('listino').dataset.fonte=fonte; $('listino-fonte').textContent='Fonte: '+fonte; markFilled($('listino')); }
 
 attachLightbox();
