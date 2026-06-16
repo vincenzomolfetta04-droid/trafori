@@ -1672,8 +1672,14 @@ function cell(v){ v=(v==null?'':String(v)); return /[",\n;]/.test(v)?'"'+v.repla
 function numc(v){ return v==null?'':(Math.round(v*100)/100).toString().replace('.',','); }
 function downloadCSV(name,content){ const blob=new Blob(['\ufeff'+content],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
 function csvRows(items){
-  const head=['CodiceTRF','Stato','Data','Marca','CodiceBrand','Categoria','Genere','Taglia','Spalle','Lunghezza','MisureExtra','Colore','Materiale','TipoMateriale','Vestibilita','Stagione','Condizione','Cartellino','Sano','DifettoTesto','Fascia','Listino','Costo','Fornitore','Pubblicazione','Target','Minimo','Margine','Titolo','Descrizione','ParoleChiave','Immagini','Note'];
-  const rows=items.map(it=>[it.trf,it.stato,(it.creato_il||'').slice(0,10),it.brand,it.codice_brand,it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),it.mis_extra,it.colore,it.materiale,it.tipo_materiale,it.fit,it.stagione,it.condizione,it.con_cartellino?'Sì':'No',it.sano?'Sì':'No',it.difetto_testo,it.fascia_key,numc(it.listino),numc(it.costo),it.fornitore,numc(it.prezzo_pub),numc(it.prezzo_target),numc(it.prezzo_min),numc(it.margine),it.titolo,(it.descrizione||'').replace(/\n/g,' / '),it.hashtag,(fotoArr(it).join(' ')),it.note]);
+  const maxFoto=Math.max(1,...items.map(it=>fotoArr(it).length));
+  const fotoCols=Array.from({length:maxFoto},(_,i)=>'Foto'+(i+1));
+  const head=['CodiceTRF','Stato','Data','Marca','CodiceBrand','Categoria','Genere','Taglia','Spalle','Lunghezza','MisureExtra','Colore','Materiale','TipoMateriale','Vestibilita','Stagione','Condizione','Cartellino','Sano','DifettoTesto','Fascia','Listino','Costo','Fornitore','Pubblicazione','Target','Minimo','Margine','Titolo','Descrizione','ParoleChiave',...fotoCols,'Note'];
+  const rows=items.map(it=>{
+    const foto=fotoArr(it);
+    const fotoCells=Array.from({length:maxFoto},(_,i)=>foto[i]||'');
+    return [it.trf,it.stato,(it.creato_il||'').slice(0,10),it.brand,it.codice_brand,it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),it.mis_extra,it.colore,it.materiale,it.tipo_materiale,it.fit,it.stagione,it.condizione,it.con_cartellino?'Sì':'No',it.sano?'Sì':'No',it.difetto_testo,it.fascia_key,numc(it.listino),numc(it.costo),it.fornitore,numc(it.prezzo_pub),numc(it.prezzo_target),numc(it.prezzo_min),numc(it.margine),it.titolo,(it.descrizione||'').replace(/\n/g,' / '),it.hashtag,...fotoCells,it.note];
+  });
   return [head.join(',')].concat(rows.map(r=>r.map(cell).join(','))).join('\r\n');
 }
 function esportaCSV(tipo,items){
