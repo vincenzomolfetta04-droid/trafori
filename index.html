@@ -153,7 +153,10 @@ input.filled:focus,select.filled:focus,textarea.filled:focus{box-shadow:0 0 0 3.
 .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:9px;margin-top:12px}
 .thumb{position:relative;border-radius:10px;overflow:hidden;background:var(--surface2);aspect-ratio:1}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
-.thumb .x{position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.thumb .x{position:absolute;top:4px;right:4px;width:28px;height:28px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;font-size:15px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:3;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.cover-badge{position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,.62);color:#fff;font-size:10px;font-weight:600;padding:2px 6px;border-radius:5px;letter-spacing:.02em;pointer-events:none}
+.thumb.sortable-ghost{opacity:.35}
+.thumb.sortable-chosen{transform:scale(1.04)}
 .aff{font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;margin-left:6px}
 .aff-alta{background:var(--okbg);color:var(--ok)}.aff-media{background:var(--warnbg);color:var(--warn)}.aff-bassa{background:var(--errbg);color:var(--err)}
 .trf-big{font-size:13px;font-weight:700;color:#fff;background:var(--ink);padding:6px 12px;border-radius:9px;letter-spacing:.02em}
@@ -266,6 +269,7 @@ input.filled:focus,select.filled:focus,textarea.filled:focus{box-shadow:0 0 0 3.
         <input type="file" id="foto-input1" accept="image/*" multiple style="display:none" onchange="onFoto(event)">
         <p class="hint" style="margin-top:8px">Segna <b id="trf-hanger">il TRF</b> sulla gruccia.</p>
         <div class="thumbs" id="thumbs1"></div>
+        <p class="hint" style="margin-top:7px">📌 Trascina le foto per riordinarle. La prima è la copertina.</p>
       </div>
       <div class="card">
         <div class="card-t">Campi rapidi — opzionali</div>
@@ -275,7 +279,9 @@ input.filled:focus,select.filled:focus,textarea.filled:focus{box-shadow:0 0 0 3.
           <div class="seg" id="seg-cond1"><button onclick="setCondQuick('nuovo',this)">Nuovo</button><button onclick="setCondQuick('usato',this)">Usato</button></div>
         </div>
         <div class="field field-quick"><label>Codice articolo</label><input type="text" id="q-codice" placeholder="es. AB123"></div>
+        <div class="field field-quick"><label>Prezzo iniziale (€)</label><input type="number" id="q-listino" min="1" step="0.5" inputmode="decimal" placeholder="es. 89.90"><p class="hint">Se lo conosci dal cartellino, inseriscilo subito.</p></div>
         <div class="field field-quick ac"><label>Taglia</label><input type="text" id="q-taglia" autocomplete="off" oninput="acInput('q-taglia','taglia')" onfocus="acInput('q-taglia','taglia')" placeholder="es. M"><div class="ac-list" id="ac-q-taglia"></div></div>
+        <div class="field field-quick"><label>Composizione</label><input type="text" id="q-composizione" placeholder="es. 100% Cotone"><p class="hint">Solo testo, es. 80% Lana 20% Cashmere.</p></div>
         <div class="g3">
           <div class="field field-quick"><label>Ampiezza spalle</label><input type="number" id="q-mspalle" inputmode="numeric" step="0.5" placeholder="34"></div>
           <div class="field field-quick"><label>Lunghezza</label><input type="number" id="q-mlung" inputmode="numeric" step="0.5" placeholder="70"></div>
@@ -342,6 +348,7 @@ input.filled:focus,select.filled:focus,textarea.filled:focus{box-shadow:0 0 0 3.
         </div>
         <input type="file" id="foto-input2" accept="image/*" multiple style="display:none" onchange="onFoto(event)">
         <div class="thumbs" id="thumbs2"></div>
+        <p class="hint" style="margin-top:7px">📌 Trascina le foto per riordinarle. La prima è la copertina.</p>
         <div class="row-btns" style="margin-top:13px">
           <button class="btn btn-sm" onclick="analizzaHaiku()">✨ Analizza foto</button>
           <button class="btn btn-sm" onclick="cercaOnline()">🌐 Cerca listino</button>
@@ -480,6 +487,7 @@ input.filled:focus,select.filled:focus,textarea.filled:focus{box-shadow:0 0 0 3.
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
 /* =====================================================================
    TRAFORI — app cloud condivisa (giro 3)
@@ -660,7 +668,7 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.ac')) document.que
    CAMPI VERDI QUANDO COMPILATI
    ===================================================================== */
 const FILL_IDS=['brand','codiceBrand','categoria','genere','taglia','mis_spalle','mis_lunghezza','mis_extra','colore','materiale','fit','stagione','listino','costo','fornitore','difettoTesto'];
-const Q_IDS=['q-brand','q-codice','q-taglia','q-mspalle','q-mlung','q-mextra','q-difetto'];
+const Q_IDS=['q-brand','q-codice','q-listino','q-composizione','q-taglia','q-mspalle','q-mlung','q-mextra','q-difetto'];
 const FILL_ALL=FILL_IDS.concat(Q_IDS);
 function markFilled(el){ if(!el) return; el.classList.toggle('filled',(el.value||'').trim()!==''); }
 function applyFilledAll(){ FILL_IDS.forEach(id=>{ const el=$(id); if(el) markFilled(el); }); }
@@ -701,8 +709,25 @@ function onFoto(ev){
 }
 function renderThumbs(){
   const r1=$('thumbs1'), r2=$('thumbs2');
-  if(r1) r1.innerHTML=photos1.map((p,i)=>`<div class="thumb"><img src="${p.url||p.dataUrl}" onclick="openLightbox(photos1.map(x=>x.url||x.dataUrl),${i})"><button class="x" onclick="event.stopPropagation();delFoto(1,${i})">×</button></div>`).join('');
-  if(r2) r2.innerHTML=photos2.map((p,i)=>`<div class="thumb"><img src="${p.url||p.dataUrl}" onclick="openLightbox(photos2.map(x=>x.url||x.dataUrl),${i})"><button class="x" onclick="event.stopPropagation();delFoto(2,${i})">×</button></div>`).join('');
+  if(r1) r1.innerHTML=photos1.map((p,i)=>`<div class="thumb"><img src="${p.url||p.dataUrl}" onclick="openLightbox(photos1.map(x=>x.url||x.dataUrl),${i})">${i===0?'<span class="cover-badge">copertina</span>':''}<button class="x" onclick="event.stopPropagation();delFoto(1,${i})">×</button></div>`).join('');
+  if(r2) r2.innerHTML=photos2.map((p,i)=>`<div class="thumb"><img src="${p.url||p.dataUrl}" onclick="openLightbox(photos2.map(x=>x.url||x.dataUrl),${i})">${i===0?'<span class="cover-badge">copertina</span>':''}<button class="x" onclick="event.stopPropagation();delFoto(2,${i})">×</button></div>`).join('');
+  initThumbSort();
+}
+let sortable1=null, sortable2=null;
+function initThumbSort(){
+  if(typeof Sortable==='undefined') return;
+  const r1=$('thumbs1'), r2=$('thumbs2');
+  if(sortable1){ try{sortable1.destroy();}catch(e){} sortable1=null; }
+  if(sortable2){ try{sortable2.destroy();}catch(e){} sortable2=null; }
+  const opts=which=>({animation:150,delay:140,delayOnTouchOnly:true,filter:'.x',preventOnFilter:false,onEnd:e=>moveFoto(which,e.oldIndex,e.newIndex)});
+  if(r1) sortable1=Sortable.create(r1,opts(1));
+  if(r2) sortable2=Sortable.create(r2,opts(2));
+}
+function moveFoto(which,from,to){
+  if(from==null||to==null||from===to) return;
+  const arr=which===1?photos1:photos2;
+  arr.splice(to,0,arr.splice(from,1)[0]);
+  setTimeout(renderThumbs,0);
 }
 function delFoto(which,i){ (which===1?photos1:photos2).splice(i,1); renderThumbs(); }
 
@@ -718,7 +743,7 @@ function openCamera(){
 async function startCamStream(){
   try{
     if(camStream) camStream.getTracks().forEach(t=>t.stop());
-    camStream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:camFacing }, audio:false });
+    camStream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:camFacing, width:{ideal:2560}, height:{ideal:2560} }, audio:false });
     $('cam-video').srcObject=camStream;
   }catch(e){
     closeCamera();
@@ -731,7 +756,7 @@ function snap(){
   const v=$('cam-video'); if(!v.videoWidth){ toast('Attendi un istante…'); return; }
   const c=$('cam-canvas'); c.width=v.videoWidth; c.height=v.videoHeight;
   c.getContext('2d').drawImage(v,0,0);
-  c.toBlob(b=>{ if(!b) return; camShots.push({blob:b, dataUrl:URL.createObjectURL(b)}); renderCamThumbs(); },'image/jpeg',0.92);
+  c.toBlob(b=>{ if(!b) return; camShots.push({blob:b, dataUrl:URL.createObjectURL(b)}); renderCamThumbs(); },'image/jpeg',0.95);
 }
 function renderCamThumbs(){
   const t=$('cam-thumbs'); if(t) t.innerHTML=camShots.map(s=>`<img src="${s.dataUrl}">`).join('');
@@ -752,11 +777,11 @@ function compress(blob){
     const img=new Image(), url=URL.createObjectURL(blob);
     img.onload=()=>{
       URL.revokeObjectURL(url);
-      let w=img.width, h=img.height; const max=1400;
+      let w=img.width, h=img.height; const max=2560;
       if(w>max||h>max){ if(w>=h){ h=Math.round(h*max/w); w=max; } else { w=Math.round(w*max/h); h=max; } }
       const c=document.createElement('canvas'); c.width=w; c.height=h;
       c.getContext('2d').drawImage(img,0,0,w,h);
-      c.toBlob(b=>resolve(b||blob),'image/jpeg',0.7);
+      c.toBlob(b=>resolve(b||blob),'image/jpeg',0.92);
     };
     img.onerror=()=>{ URL.revokeObjectURL(url); resolve(blob); };
     img.src=url;
@@ -814,12 +839,15 @@ async function salvaStep1(){
   toast('Salvataggio '+trf+'…');
   let fotoUrls=[]; if(photos1.length){ fotoUrls=await uploadFoto(trf,photos1); }
   const ms=$('q-mspalle').value.trim(), ml=$('q-mlung').value.trim(), mx=$('q-mextra').value.trim();
+  const ql=$('q-listino').value.trim();
   const rec={
     trf, stato:'bozza',
     brand:$('q-brand').value.trim()||null,
     codice_brand:$('q-codice').value.trim()||null,
     taglia:$('q-taglia').value.trim()||null,
+    materiale:$('q-composizione').value.trim()||null,
     mis_spalle: ms?parseFloat(ms):null, mis_lunghezza: ml?parseFloat(ml):null, mis_extra: mx||null,
+    listino: ql?parseFloat(ql):null,
     condizione: condQuick||null,
     sano: !$('q-difetto').value.trim(),
     difetto_testo:$('q-difetto').value.trim()||null,
@@ -831,7 +859,7 @@ async function salvaStep1(){
   const { error } = await sb.from('articoli').insert(rec);
   if(error){ toast('Errore: '+error.message); return; }
   toast('Salvato '+trf);
-  ['q-brand','q-codice','q-taglia','q-mspalle','q-mlung','q-mextra','q-difetto'].forEach(id=>{ const el=$(id); if(el){ el.value=''; markFilled(el); } });
+  ['q-brand','q-codice','q-listino','q-composizione','q-taglia','q-mspalle','q-mlung','q-mextra','q-difetto'].forEach(id=>{ const el=$(id); if(el){ el.value=''; markFilled(el); } });
   condQuick=null; [...$('seg-cond1').children].forEach(x=>x.className='');
   photos1=[]; renderThumbs();
   resetStep2();
