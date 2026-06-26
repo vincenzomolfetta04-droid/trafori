@@ -282,12 +282,14 @@ input.filled:focus,select.filled:focus,textarea.filled:focus{box-shadow:0 0 0 3.
         <div class="field field-quick"><label>Prezzo iniziale (€)</label><input type="number" id="q-listino" min="1" step="0.5" inputmode="decimal" placeholder="es. 89.90"><p class="hint">Se lo conosci dal cartellino, inseriscilo subito.</p></div>
         <div class="field field-quick ac"><label>Taglia</label><input type="text" id="q-taglia" autocomplete="off" oninput="acInput('q-taglia','taglia')" onfocus="acInput('q-taglia','taglia')" placeholder="es. M"><div class="ac-list" id="ac-q-taglia"></div></div>
         <div class="field field-quick"><label>Composizione</label><input type="text" id="q-composizione" placeholder="es. 100% Cotone"><p class="hint">Solo testo, es. 80% Lana 20% Cashmere.</p></div>
-        <div class="g3">
+        <div class="g2">
           <div class="field field-quick"><label>Ampiezza spalle</label><input type="number" id="q-mspalle" inputmode="numeric" step="0.5" placeholder="34"></div>
           <div class="field field-quick"><label>Lunghezza</label><input type="number" id="q-mlung" inputmode="numeric" step="0.5" placeholder="70"></div>
-          <div class="field field-quick"><label>Misure aggiuntive</label><input type="text" id="q-mextra" placeholder="Manica: 7 cm"></div>
+          <div class="field field-quick"><label>Girovita</label><input type="number" id="q-girovita" inputmode="numeric" step="0.5" placeholder="40"></div>
+          <div class="field field-quick"><label>Torace</label><input type="number" id="q-torace" inputmode="numeric" step="0.5" placeholder="50"></div>
         </div>
-        <p class="hint" style="margin-top:-4px">Spalle e lunghezza: solo numero. Aggiuntive: puoi scrivere testo e numeri. ES: Manica: 7 cm</p>
+        <div class="field field-quick" style="margin-top:10px"><label>Misure aggiuntive</label><input type="text" id="q-mextra" placeholder="Manica: 7 cm"></div>
+        <p class="hint" style="margin-top:5px">Spalle, lunghezza, girovita e torace: solo numero (cm). Aggiuntive: testo libero, es. Manica: 7 cm</p>
         <div class="field field-quick" style="margin-top:13px"><label>Difetto (se presente)</label><input type="text" id="q-difetto" placeholder="es. Macchia sul polsino"><p class="hint">Lascia vuoto se il capo è sano.</p></div>
       </div>
       <button class="btn btn-pri btn-w btn-lg" onclick="salvaStep1()">Salva e prossimo TRF →</button>
@@ -311,12 +313,14 @@ input.filled:focus,select.filled:focus,textarea.filled:focus{box-shadow:0 0 0 3.
           <div class="field ac"><label>Genere</label><input type="text" id="genere" autocomplete="off" oninput="acInput('genere','genere')" onfocus="acInput('genere','genere')" placeholder="es. Donna"><div class="ac-list" id="ac-genere"></div></div>
           <div class="field ac"><label>Taglia</label><input type="text" id="taglia" autocomplete="off" oninput="acInput('taglia','taglia')" onfocus="acInput('taglia','taglia')" placeholder="es. M"><div class="ac-list" id="ac-taglia"></div></div>
         </div>
-        <div class="g3">
+        <div class="g2">
           <div class="field"><label>Ampiezza spalle</label><input type="number" id="mis_spalle" inputmode="numeric" step="0.5" placeholder="34"></div>
           <div class="field"><label>Lunghezza</label><input type="number" id="mis_lunghezza" inputmode="numeric" step="0.5" placeholder="70"></div>
-          <div class="field"><label>Misure aggiuntive</label><input type="text" id="mis_extra" placeholder="Manica: 7 cm"></div>
+          <div class="field"><label>Girovita</label><input type="number" id="mis_girovita" inputmode="numeric" step="0.5" placeholder="40"></div>
+          <div class="field"><label>Torace</label><input type="number" id="mis_torace" inputmode="numeric" step="0.5" placeholder="50"></div>
         </div>
-        <p class="hint" style="margin-top:-4px">Spalle e lunghezza: solo numero. Aggiuntive: puoi scrivere testo e numeri. ES: Manica: 7 cm</p>
+        <div class="field" style="margin-top:10px"><label>Misure aggiuntive</label><input type="text" id="mis_extra" placeholder="Manica: 7 cm"></div>
+        <p class="hint" style="margin-top:5px">Spalle, lunghezza, girovita e torace: solo numero (cm). Aggiuntive: testo libero, es. Manica: 7 cm</p>
         <div class="field ac" style="margin-top:13px"><label>Colore</label><input type="text" id="colore" autocomplete="off" oninput="acInput('colore','colore')" onfocus="acInput('colore','colore')" placeholder="es. Borgogna"><div class="ac-list" id="ac-colore"></div></div>
         <div class="field"><label>Materiale (come scritto in etichetta)</label><input type="text" id="materiale" placeholder="es. 100% Cotone"></div>
         <div class="field">
@@ -399,6 +403,7 @@ input.filled:focus,select.filled:focus,textarea.filled:focus{box-shadow:0 0 0 3.
           <button class="btn btn-w btn-sm" onclick="generaContenuti()">✍️ Genera titolo, descrizione e parole chiave</button>
           <div class="field" style="margin-top:13px"><label>Titolo</label><input type="text" id="titolo" placeholder="Categoria Brand Taglia Colore"></div>
           <div class="field"><label>Descrizione</label><textarea id="descrizione" style="min-height:200px" placeholder="—"></textarea></div>
+          <button class="btn btn-w btn-sm" style="margin-top:2px" onclick="copiaDescrizione()">📋 Copia descrizione</button>
           <div class="field"><label>Parole chiave (SEO, per eBay e altri)</label><textarea id="hashtag" style="min-height:50px" placeholder="Felpa, taglia L, cotone, donna…"></textarea><p class="hint">Niente cancelletti: parole pulite separate da virgola, ottime per i motori di ricerca dei marketplace.</p></div>
         </div>
 
@@ -667,8 +672,8 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.ac')) document.que
 /* =====================================================================
    CAMPI VERDI QUANDO COMPILATI
    ===================================================================== */
-const FILL_IDS=['brand','codiceBrand','categoria','genere','taglia','mis_spalle','mis_lunghezza','mis_extra','colore','materiale','fit','stagione','listino','costo','fornitore','difettoTesto'];
-const Q_IDS=['q-brand','q-codice','q-listino','q-composizione','q-taglia','q-mspalle','q-mlung','q-mextra','q-difetto'];
+const FILL_IDS=['brand','codiceBrand','categoria','genere','taglia','mis_spalle','mis_lunghezza','mis_girovita','mis_torace','mis_extra','colore','materiale','fit','stagione','listino','costo','fornitore','difettoTesto'];
+const Q_IDS=['q-brand','q-codice','q-listino','q-composizione','q-taglia','q-mspalle','q-mlung','q-girovita','q-torace','q-mextra','q-difetto'];
 const FILL_ALL=FILL_IDS.concat(Q_IDS);
 function markFilled(el){ if(!el) return; el.classList.toggle('filled',(el.value||'').trim()!==''); }
 function applyFilledAll(){ FILL_IDS.forEach(id=>{ const el=$(id); if(el) markFilled(el); }); }
@@ -834,11 +839,13 @@ function attachLightbox(){
    STEP 1 — salva parziale
    ===================================================================== */
 async function salvaStep1(){
+  if(!$('q-codice').value.trim()){ toast('Il codice articolo è obbligatorio.'); $('q-codice').focus(); return; }
   if(!step1TRF){ await reserveTRF(); if(!step1TRF) return; }
   const trf=step1TRF;
   toast('Salvataggio '+trf+'…');
   let fotoUrls=[]; if(photos1.length){ fotoUrls=await uploadFoto(trf,photos1); }
   const ms=$('q-mspalle').value.trim(), ml=$('q-mlung').value.trim(), mx=$('q-mextra').value.trim();
+  const gv=$('q-girovita').value.trim(), tr=$('q-torace').value.trim();
   const ql=$('q-listino').value.trim();
   const rec={
     trf, stato:'bozza',
@@ -846,7 +853,7 @@ async function salvaStep1(){
     codice_brand:$('q-codice').value.trim()||null,
     taglia:$('q-taglia').value.trim()||null,
     materiale:$('q-composizione').value.trim()||null,
-    mis_spalle: ms?parseFloat(ms):null, mis_lunghezza: ml?parseFloat(ml):null, mis_extra: mx||null,
+    mis_spalle: ms?parseFloat(ms):null, mis_lunghezza: ml?parseFloat(ml):null, mis_girovita: gv?parseFloat(gv):null, mis_torace: tr?parseFloat(tr):null, mis_extra: mx||null,
     listino: ql?parseFloat(ql):null,
     condizione: condQuick||null,
     sano: !$('q-difetto').value.trim(),
@@ -859,7 +866,7 @@ async function salvaStep1(){
   const { error } = await sb.from('articoli').insert(rec);
   if(error){ toast('Errore: '+error.message); return; }
   toast('Salvato '+trf);
-  ['q-brand','q-codice','q-listino','q-composizione','q-taglia','q-mspalle','q-mlung','q-mextra','q-difetto'].forEach(id=>{ const el=$(id); if(el){ el.value=''; markFilled(el); } });
+  ['q-brand','q-codice','q-listino','q-composizione','q-taglia','q-mspalle','q-mlung','q-girovita','q-torace','q-mextra','q-difetto'].forEach(id=>{ const el=$(id); if(el){ el.value=''; markFilled(el); } });
   condQuick=null; [...$('seg-cond1').children].forEach(x=>x.className='');
   photos1=[]; renderThumbs();
   resetStep2();
@@ -887,7 +894,7 @@ document.querySelectorAll('#chips-difetti .chip').forEach(c=>c.addEventListener(
 
 function resetStep2(){
   editingTRF=null; lastCalc=null; photos2=[];
-  ['brand','codiceBrand','categoria','genere','taglia','mis_spalle','mis_lunghezza','mis_extra','colore','materiale','fit','stagione','listino','costo','fornitore','difettoTesto','note','titolo','descrizione','hashtag'].forEach(id=>{ const el=$(id); if(el){ el.value=''; markFilled(el); } });
+  ['brand','codiceBrand','categoria','genere','taglia','mis_spalle','mis_lunghezza','mis_girovita','mis_torace','mis_extra','colore','materiale','fit','stagione','listino','costo','fornitore','difettoTesto','note','titolo','descrizione','hashtag'].forEach(id=>{ const el=$(id); if(el){ el.value=''; markFilled(el); } });
   condizione=null; conCartellino=null; tipoMat=null; sano=null;
   [...$('seg-cond').children].forEach(x=>x.className=''); [...$('seg-cart').children].forEach(x=>x.className='');
   [...$('seg-tipomat').children].forEach(x=>x.className='');
@@ -960,8 +967,7 @@ function applicaTarget(target){
     `<b>Listino: ${fmt(L)}</b> · ${condizione==='usato'?'usato (−30%)':'nuovo'}<br>`+
     `Fascia: <span class="fascia ${lastCalc.fasciaClass}">${lastCalc.fasciaLabel}</span> → ${pct(lastCalc.pctBase)} del listino<br>`+
     `Correttori colore+taglia+materiale: <b>${(lastCalc.adjFinale>=0?'+':'')+Math.round(lastCalc.adjFinale*100)}%</b><br>`+
-    `Pubblicazione ${fmt(pub)} · Target ${fmt(target)} · Minimo ${fmt(min)}`+
-    (costo?`<br>Margine sul target: <b>${fmt(margine)}</b>`:'');
+    `Pubblicazione ${fmt(pub)} · Target ${fmt(target)} · Minimo ${fmt(min)}`;
   lastCalc.target=target; lastCalc.pub=pub; lastCalc.min=min; lastCalc.margine=margine;
 }
 function onTargetEdit(){ if(!lastCalc) return; let t=parseFloat($('r-tgt-input').value); if(!t||t<=0) return; applicaTarget(arr99(t)); }
@@ -1010,6 +1016,7 @@ function generaContenuti(){
         fit=$('fit').value.trim(), sta=$('stagione').value.trim(),
         cod=$('codiceBrand').value.trim(), note=$('note').value.trim(), dif=$('difettoTesto').value.trim();
   const msp=$('mis_spalle').value.trim(), mln=$('mis_lunghezza').value.trim(), mxt=$('mis_extra').value.trim();
+  const gir=$('mis_girovita').value.trim(), tor=$('mis_torace').value.trim();
   if(!b){ toast('Inserisci almeno il brand.'); return; }
   $('titolo').value=[cat,b,tag,col].filter(Boolean).join(' ');
   const lcFirst=s=>s?s.charAt(0).toLowerCase()+s.slice(1):s;
@@ -1019,13 +1026,15 @@ function generaContenuti(){
   const difTxt=(sano===false&&dif)?` (Difetto presente: ${dif}📸)`:'';
   const listino=parseFloat($('listino').value);
   // --- corpo descrizione ---
-  let d=`AFFARE: ${cat}${fit?' '+lcFirst(fit):''} ${b}. Condizione: ${condTxt}${difTxt}\n`;
+  let d=`AFFARE: ${cat}${fit?` vestibilità ${lcFirst(fit)}`:''}.${b?` ${b}.`:''} Condizione: ${condTxt}${difTxt}\n`;
   if(note) d+=`~~${note}~~\n`;
   d+=`\n`;
   if(listino>0) d+=`Prezzo consigliato di circa: ${eurIt(listino)}\n`;
   d+=`-Taglia: ${tag||'-'}\n`;
   if(msp) d+=`-Ampiezza spalle: ${msp} cm\n`;
   if(mln) d+=`-Lunghezza: ${mln} cm\n`;
+  if(gir) d+=`-Girovita: ${gir} cm\n`;
+  if(tor) d+=`-Torace: ${tor} cm\n`;
   if(mxt) d+=`-${mxt}\n`;
   d+=`-Colore: ${col||'-'}\n`;
   d+=`-Materiale: ${mat||'-'}\n`;
@@ -1044,7 +1053,7 @@ function generaContenuti(){
   const keywords=kw.slice(0,8).join(', ');
   $('hashtag').value=keywords; markFilled($('hashtag'));
   // --- chiusura ---
-  d+=`${chiusura}\n\n${keywords}\n\n${trf}`;
+  d+=`${chiusura}\n\n${keywords}\n\nCODICE${trf}`;
   $('descrizione').value=d;
   toast('Contenuti generati');
 }
@@ -1055,6 +1064,8 @@ function generaContenuti(){
 async function salvaArticolo(){
   const brand=$('brand').value.trim();
   if(!brand){ toast('Il brand è obbligatorio.'); return; }
+  if(!$('codiceBrand').value.trim()){ toast('Il codice articolo è obbligatorio.'); $('codiceBrand').scrollIntoView({behavior:'smooth',block:'center'}); $('codiceBrand').focus(); return; }
+  if(!(parseFloat($('costo').value)>0)){ toast('Il costo d\'acquisto è obbligatorio.'); $('costo').scrollIntoView({behavior:'smooth',block:'center'}); $('costo').focus(); return; }
   if(!condizione){ toast('Scegli Nuovo o Usato.'); $('seg-cond').scrollIntoView({behavior:'smooth',block:'center'}); return; }
   if(!lastCalc||!lastCalc.target){ toast('Calcola prima i prezzi.'); return; }
   toast('Salvataggio…');
@@ -1064,10 +1075,11 @@ async function salvaArticolo(){
   let descr=$('descrizione').value.trim().replace(/\{\{TRF\}\}/g,trf);
   const chips=[...document.querySelectorAll('#chips-difetti .chip.on')].map(c=>c.textContent.trim()).join(' | ');
   const ms=$('mis_spalle').value.trim(), ml=$('mis_lunghezza').value.trim(), mx=$('mis_extra').value.trim();
+  const gv=$('mis_girovita').value.trim(), tr=$('mis_torace').value.trim();
   const rec={
     trf, brand, codice_brand:$('codiceBrand').value.trim(), categoria:$('categoria').value.trim(),
     genere:$('genere').value.trim(), taglia:$('taglia').value.trim(),
-    mis_spalle: ms?parseFloat(ms):null, mis_lunghezza: ml?parseFloat(ml):null, mis_extra: mx||null,
+    mis_spalle: ms?parseFloat(ms):null, mis_lunghezza: ml?parseFloat(ml):null, mis_girovita: gv?parseFloat(gv):null, mis_torace: tr?parseFloat(tr):null, mis_extra: mx||null,
     colore:$('colore').value.trim(), materiale:$('materiale').value.trim(), tipo_materiale:tipoMat,
     fit:$('fit').value.trim(), stagione:$('stagione').value.trim(), condizione, con_cartellino:!!conCartellino,
     sano, dif_visibilita:sano?null:$('visibilita').value, dif_entita:sano?null:$('entita').value,
@@ -1167,12 +1179,12 @@ function caricaInForm(trf){
   editingTRF=trf; $('nuovo-titolo').textContent=it.stato==='bozza'?'Completa scheda':'Modifica'; $('trf-pill').textContent=trf;
   $('brand').value=it.brand||''; $('codiceBrand').value=it.codice_brand||''; $('categoria').value=it.categoria||'';
   $('genere').value=it.genere||''; $('taglia').value=it.taglia||'';
-  $('mis_spalle').value=it.mis_spalle!=null?it.mis_spalle:''; $('mis_lunghezza').value=it.mis_lunghezza!=null?it.mis_lunghezza:''; $('mis_extra').value=it.mis_extra||'';
+  $('mis_spalle').value=it.mis_spalle!=null?it.mis_spalle:''; $('mis_lunghezza').value=it.mis_lunghezza!=null?it.mis_lunghezza:''; $('mis_girovita').value=it.mis_girovita!=null?it.mis_girovita:''; $('mis_torace').value=it.mis_torace!=null?it.mis_torace:''; $('mis_extra').value=it.mis_extra||'';
   $('colore').value=it.colore||''; $('materiale').value=it.materiale||''; $('fit').value=it.fit||''; $('stagione').value=it.stagione||'';
   if(it.tipo_materiale){ const idx={sintetico:0,misto:1,naturale:2,pregiato:3}[it.tipo_materiale]??1; setTipoMat(it.tipo_materiale,$('seg-tipomat').children[idx]); } else { tipoMat=null; [...$('seg-tipomat').children].forEach(x=>x.className=''); }
   if(it.condizione==='nuovo'||it.condizione==='usato'){ setCond(it.condizione,$('seg-cond').children[it.condizione==='usato'?1:0]); }
   else { condizione=null; [...$('seg-cond').children].forEach(x=>x.className=''); }
-  if(it.con_cartellino===true||it.con_cartellino===false){ setCart(!!it.con_cartellino,$('seg-cart').children[it.con_cartellino?1:0]); }
+  if(it.con_cartellino===true){ setCart(true,$('seg-cart').children[1]); }
   else { conCartellino=null; [...$('seg-cart').children].forEach(x=>x.className=''); }
   setSano(it.sano!==false);
   if(it.sano===false){ $('difettoTesto').value=it.difetto_testo||''; $('visibilita').value=it.dif_visibilita||'vista'; $('entita').value=it.dif_entita||'medio';
@@ -1696,6 +1708,18 @@ async function salvaCorrVoce(id){
 /* =====================================================================
    CSV / MAGICSTORE
    ===================================================================== */
+function copiaDescrizione(){
+  const t=$('descrizione').value||'';
+  if(!t){ toast('Genera prima la descrizione.'); return; }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(()=>toast('Descrizione copiata')).catch(()=>fallbackCopy(t));
+  } else fallbackCopy(t);
+}
+function fallbackCopy(t){
+  const ta=document.createElement('textarea'); ta.value=t; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.focus(); ta.select();
+  try{ document.execCommand('copy'); toast('Descrizione copiata'); }catch(e){ toast('Copia non riuscita'); }
+  ta.remove();
+}
 function cell(v){ v=(v==null?'':String(v)); return /[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
 function numc(v){ return v==null?'':(Math.round(v*100)/100).toString().replace('.',','); }
 function downloadCSV(name,content){ const blob=new Blob(['\ufeff'+content],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
@@ -1706,7 +1730,19 @@ function csvRows(items){
   const rows=items.map(it=>{
     const foto=fotoArr(it);
     const fotoCells=Array.from({length:maxFoto},(_,i)=>foto[i]||'');
-    return [it.trf,it.stato,(it.creato_il||'').slice(0,10),it.brand,it.codice_brand,it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),it.mis_extra,it.colore,it.materiale,it.tipo_materiale,it.fit,it.stagione,it.condizione,it.con_cartellino?'Sì':'No',it.sano?'Sì':'No',it.difetto_testo,it.fascia_key,numc(it.listino),numc(it.costo),it.fornitore,numc(it.prezzo_pub),numc(it.prezzo_target),numc(it.prezzo_min),numc(it.margine),it.titolo,(it.descrizione||'').replace(/\n/g,' / '),it.hashtag,...fotoCells,it.note];
+    return [it.trf,it.stato,(it.creato_il||'').slice(0,10),it.brand,it.codice_brand,it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),it.mis_extra,it.colore,it.materiale,it.tipo_materiale,it.fit,it.stagione,it.condizione,it.con_cartellino?'Sì':'No',it.sano?'Sì':'No',it.difetto_testo,it.fascia_key,numc(it.listino),numc(it.costo),it.fornitore,numc(it.prezzo_pub),numc(it.prezzo_target),numc(it.prezzo_min),numc(it.margine),it.titolo,(it.descrizione||''),it.hashtag,...fotoCells,it.note];
+  });
+  return [head.join(',')].concat(rows.map(r=>r.map(cell).join(','))).join('\r\n');
+}
+function csvMagic(items){
+  const NFOTO=10;
+  const cap=x=>x?x.charAt(0).toUpperCase()+x.slice(1):'';
+  const fotoCols=Array.from({length:NFOTO},(_,i)=>'Foto'+(i+1));
+  const head=['CODICETRF','Marca','CodiceBrand','Categoria','Genere','Taglia','Spalle','Lunghezza','Girovita','Torace','Misureextra','Colore','Materiale','Vestibilità','Stagione','Condizione','Cartellino','Target',"Costo d'acquisto",'Titolo','Descrizione',...fotoCols];
+  const rows=items.map(it=>{
+    const foto=fotoArr(it);
+    const fc=Array.from({length:NFOTO},(_,i)=>foto[i]||'');
+    return [it.trf,it.brand,it.codice_brand,it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),numc(it.mis_girovita),numc(it.mis_torace),it.mis_extra,it.colore,it.materiale,it.fit,it.stagione,cap(it.condizione),it.con_cartellino?'Sì':'No',numc(it.prezzo_target),numc(it.costo),it.titolo,(it.descrizione||''),...fc];
   });
   return [head.join(',')].concat(rows.map(r=>r.map(cell).join(','))).join('\r\n');
 }
@@ -1719,7 +1755,7 @@ async function esportaNuovi(){
   const nuovi=(CACHE_ITEMS||[]).filter(i=>!i.esportato_magicstore && i.stato!=='bozza');
   if(!nuovi.length){ toast('Nessun nuovo articolo da esportare.'); return; }
   if(!confirm(nuovi.length+' articoli verranno esportati e segnati come caricati su MagicStore. Procedere?')) return;
-  downloadCSV('magicstore_nuovi_'+oggi()+'.csv',csvRows(nuovi));
+  downloadCSV('magicstore_nuovi_'+oggi()+'.csv',csvMagic(nuovi));
   const ids=nuovi.map(i=>i.trf), ora=new Date().toISOString();
   await sb.from('articoli').update({esportato_magicstore:true,esportato_il:ora}).in('trf',ids);
   CACHE_ITEMS=null; await caricaTutto(); toast('Esportati e segnati ('+nuovi.length+')');
@@ -1736,7 +1772,7 @@ function esportaSelezionati(){
   const sel=[...document.querySelectorAll('.exp-chk:checked')].map(c=>c.value);
   const items=(CACHE_ITEMS||[]).filter(i=>sel.includes(i.trf));
   if(!items.length){ toast('Nessuno selezionato.'); return; }
-  downloadCSV('magicstore_scelti_'+oggi()+'.csv',csvRows(items));
+  downloadCSV('magicstore_scelti_'+oggi()+'.csv',csvMagic(items));
   chiudiSheet(); toast('Esportati '+items.length);
 }
 
