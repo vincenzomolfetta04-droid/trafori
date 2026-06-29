@@ -1720,7 +1720,7 @@ function fallbackCopy(t){
   try{ document.execCommand('copy'); toast('Descrizione copiata'); }catch(e){ toast('Copia non riuscita'); }
   ta.remove();
 }
-function cell(v){ v=(v==null?'':String(v)); return /[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function cell(v){ v=(v==null?'':String(v)); return /["\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
 function numc(v){ return v==null?'':(Math.round(v*100)/100).toString().replace('.',','); }
 function downloadCSV(name,content){ const blob=new Blob(['\ufeff'+content],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
 function csvRows(items){
@@ -1732,7 +1732,7 @@ function csvRows(items){
     const fotoCells=Array.from({length:maxFoto},(_,i)=>foto[i]||'');
     return [it.trf,it.stato,(it.creato_il||'').slice(0,10),it.brand,it.codice_brand,it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),it.mis_extra,it.colore,it.materiale,it.tipo_materiale,it.fit,it.stagione,it.condizione,it.con_cartellino?'Sì':'No',it.sano?'Sì':'No',it.difetto_testo,it.fascia_key,numc(it.listino),numc(it.costo),it.fornitore,numc(it.prezzo_pub),numc(it.prezzo_target),numc(it.prezzo_min),numc(it.margine),it.titolo,(it.descrizione||''),it.hashtag,...fotoCells,it.note];
   });
-  return [head.join(',')].concat(rows.map(r=>r.map(cell).join(','))).join('\r\n');
+  return [head.join(';')].concat(rows.map(r=>r.map(cell).join(';'))).join('\r\n');
 }
 function csvMagic(items){
   const NFOTO=10;
@@ -1744,7 +1744,7 @@ function csvMagic(items){
     const fc=Array.from({length:NFOTO},(_,i)=>foto[i]||'');
     return [it.trf,it.brand,it.codice_brand,it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),numc(it.mis_girovita),numc(it.mis_torace),it.mis_extra,it.colore,it.materiale,it.fit,it.stagione,cap(it.condizione),it.con_cartellino?'Sì':'No',numc(it.prezzo_target),numc(it.costo),it.titolo,(it.descrizione||''),...fc];
   });
-  return [head.join(',')].concat(rows.map(r=>r.map(cell).join(','))).join('\r\n');
+  return [head.join(';')].concat(rows.map(r=>r.map(cell).join(';'))).join('\r\n');
 }
 function esportaCSV(tipo,items){
   if(!items||!items.length){ toast('Niente da esportare.'); return; }
