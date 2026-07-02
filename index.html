@@ -1102,7 +1102,7 @@ function generaContenuti(){
   const eurIt=n=>'€'+Number(n).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
   const trf=editingTRF||step1TRF||'{{TRF}}';
   const condTxt=condizione==='usato'?'Usato':'Nuovo';
-  const difTxt=(sano===false&&dif)?` (Difetto presente: ${dif}📸)`:'';
+  const difTxt=(sano===false&&dif)?` (Difetto presente: ${dif})`:'';
   const listino=parseFloat($('listino').value);
   // --- corpo descrizione ---
   let d=`AFFARE: ${cat}${fit?` vestibilità ${lcFirst(fit)}`:''}.${b?` ${b}.`:''} Condizione: ${condTxt}${difTxt}\n`;
@@ -1125,7 +1125,7 @@ function generaContenuti(){
   const GEN_VAR={'Donna':'Femminile','Uomo':'Maschile','Unisex':'Unisex','Bambino':'Bimbo'};
   const tagU=(tag||'').toUpperCase();
   const tagBand=/XXS|XS|^S$/.test(tagU)?'taglia piccola':/^M$|^L$/.test(tagU)?'taglia media':/XL|XXL|3XL/.test(tagU)?'taglia grande':'';
-  const chiusura=`\n🤝Siamo presenti online e offline con 5 Outlet Store in Puglia, Italia\n📦 Spedizione rapida\n💬 Disponibile per Aiutarti!`;
+  const chiusura=`\nSiamo presenti online e offline con 5 Outlet Store in Puglia, Italia\n Spedizione rapida\n Disponibile per Aiutarti!`;
   const cand=[CAT_EN[cat], tagBand, SEA_ADJ[sta], GEN_VAR[gen], 'moda','occasione','stile','tendenza','low cost'];
   const corpoNorm=norm(d+chiusura);
   const kw=[]; cand.forEach(x=>{ if(!x) return; const t=String(x).trim(); if(!t) return; if(corpoNorm.includes(norm(t))) return; if(kw.some(k=>k.toLowerCase()===t.toLowerCase())) return; kw.push(t); });
@@ -1817,11 +1817,11 @@ function csvMagic(items){
   const NFOTO=10;
   const cap=x=>x?x.charAt(0).toUpperCase()+x.slice(1):'';
   const fotoCols=Array.from({length:NFOTO},(_,i)=>'Foto'+(i+1));
-  const head=['CODICETRF','Marca','CodiceBrand','Categoria','Genere','Taglia','Spalle','Lunghezza','Girovita','Torace','Misureextra','Colore','Materiale','Vestibilità','Stagione','Condizione','Cartellino','Target',"Costo d'acquisto",'Titolo','Descrizione',...fotoCols];
+  const head=['CODICETRF','Marca','CodiceBrand','Categoria','Genere','Taglia','Spalle','Lunghezza','Girovita','Torace','Misureextra','Colore','Materiale','Vestibilità','Stagione','Condizione','Cartellino','Difetto','Target',"Costo d'acquisto",'Titolo','Descrizione','ParoleChiave',...fotoCols];
   const rows=items.map(it=>{
     const foto=fotoArr(it);
     const fc=Array.from({length:NFOTO},(_,i)=>foto[i]||'');
-    return [it.trf,it.brand,it.codice_brand,it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),numc(it.mis_girovita),numc(it.mis_torace),it.mis_extra,it.colore,it.materiale,it.fit,it.stagione,cap(it.condizione),it.con_cartellino?'Sì':'No',numc(it.prezzo_target),numc(it.costo),it.titolo,(it.descrizione||''),...fc];
+    return [it.trf,it.brand,it.codice_brand,it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),numc(it.mis_girovita),numc(it.mis_torace),it.mis_extra,it.colore,it.materiale,it.fit,it.stagione,cap(it.condizione),it.con_cartellino?'Sì':'No',it.difetto_testo||'',numc(it.prezzo_target),numc(it.costo),it.titolo,(it.descrizione||''),it.hashtag||'',...fc];
   });
   return [head.join(';')].concat(rows.map(r=>r.map(cell).join(';'))).join('\r\n');
 }
