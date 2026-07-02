@@ -239,7 +239,8 @@ input.filled:focus,select.filled:focus,textarea.filled:focus{box-shadow:0 0 0 3.
   <div class="field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
   <button class="btn btn-pri btn-w btn-lg" style="margin-top:8px" onclick="doLogin()">Accedi</button>
   <div id="login-msg" class="hidden"></div>
-  <p class="hint" style="text-align:center;margin-top:20px">Primo accesso? <span class="btn-gho" style="padding:0" onclick="toggleSignup()">Crea il tuo account</span></p>
+  <p class="hint" style="text-align:center;margin-top:12px"><span class="btn-gho" style="padding:0" onclick="showForgotPassword()">Password dimenticata?</span></p>
+  <p class="hint" style="text-align:center;margin-top:8px">Primo accesso? <span class="btn-gho" style="padding:0" onclick="toggleSignup()">Crea il tuo account</span></p>
   <div id="signup-box" class="hidden" style="margin-top:8px">
     <div class="divider"></div>
     <div class="field"><label>Il tuo nome</label><input type="text" id="su-nome" placeholder="es. Marco"></div>
@@ -248,6 +249,25 @@ input.filled:focus,select.filled:focus,textarea.filled:focus{box-shadow:0 0 0 3.
     <button class="btn btn-w btn-lg" onclick="doSignup()">Crea account</button>
     <p class="hint" style="margin-top:10px">Il primo account creato diventa automaticamente il titolare.</p>
   </div>
+</div>
+
+<!-- RECUPERO PASSWORD -->
+<div id="forgot-pw" class="login hidden">
+  <h1>Trafori</h1>
+  <p class="tagline">Recupera la tua password</p>
+  <div class="field"><label>Email del tuo account</label><input type="email" id="fp-email" placeholder="nome@esempio.it" autocomplete="username"></div>
+  <button class="btn btn-pri btn-w btn-lg" style="margin-top:8px" id="fp-btn" onclick="sendResetLink()">Invia link di recupero</button>
+  <div id="fp-msg" class="hidden"></div>
+  <p class="hint" style="text-align:center;margin-top:20px"><span class="btn-gho" style="padding:0" onclick="backToLogin()">← Torna al login</span></p>
+</div>
+
+<div id="reset-pw" class="login hidden">
+  <h1>Trafori</h1>
+  <p class="tagline">Imposta la tua nuova password</p>
+  <div class="field"><label>Nuova password (min 6 caratteri)</label><input type="password" id="rp-pass1" placeholder="••••••••" autocomplete="new-password"></div>
+  <div class="field"><label>Conferma nuova password</label><input type="password" id="rp-pass2" placeholder="••••••••" autocomplete="new-password"></div>
+  <button class="btn btn-pri btn-w btn-lg" style="margin-top:8px" onclick="doResetPassword()">Salva nuova password</button>
+  <div id="rp-msg" class="hidden"></div>
 </div>
 
 <div id="app" class="app hidden">
@@ -536,12 +556,71 @@ function fotoArr(it){ try{ const a=it&&it.foto_urls?JSON.parse(it.foto_urls):[];
 /* =====================================================================
    AUTENTICAZIONE
    ===================================================================== */
+let isRecoveryMode=false;
 async function init(){
+  sb.auth.onAuthStateChange(async(event,session)=>{
+    if(event==='PASSWORD_RECOVERY'){
+      isRecoveryMode=true;
+      showResetPassword();
+    }
+  });
+  const hash=window.location.hash||'';
+  if(hash.includes('type=recovery')){
+    isRecoveryMode=true;
+    const params=new URLSearchParams(hash.substring(1));
+    const at=params.get('access_token'), rt=params.get('refresh_token');
+    if(at&&rt) await sb.auth.setSession({access_token:at,refresh_token:rt});
+    showResetPassword();
+    return;
+  }
   const { data:{ session } } = await sb.auth.getSession();
-  if(session) await onLoggedIn(session.user); else showLogin();
+  if(session && !isRecoveryMode) await onLoggedIn(session.user);
+  else if(!isRecoveryMode) showLogin();
 }
-function showLogin(){ $('login').classList.remove('hidden'); $('app').classList.add('hidden'); $('tabbar').classList.add('hidden'); }
+function hideAllViews(){ ['login','forgot-pw','reset-pw','app'].forEach(id=>$(id).classList.add('hidden')); $('tabbar').classList.add('hidden'); }
+function showLogin(){ hideAllViews(); $('login').classList.remove('hidden'); }
+function showForgotPassword(){ hideAllViews(); $('forgot-pw').classList.remove('hidden'); hideMsg('fp-msg'); $('fp-email').value=$('login-email').value||''; $('fp-btn').disabled=false; $('fp-btn').textContent='Invia link di recupero'; }
+function showResetPassword(){ hideAllViews(); $('reset-pw').classList.remove('hidden'); hideMsg('rp-msg'); }
+function backToLogin(){ hideAllViews(); $('login').classList.remove('hidden'); hideMsg('login-msg'); isRecoveryMode=false; }
 function toggleSignup(){ $('signup-box').classList.toggle('hidden'); }
+let fpCooldown=0;
+async function sendResetLink(){
+  const email=$('fp-email').value.trim();
+  if(!email){ setMsg('fp-msg','msg-err','Inserisci la tua email.'); return; }
+  if(fpCooldown>0) return;
+  setMsg('fp-msg','msg-load','<div class="spinner"></div> Invio in corso\u2026');
+  $('fp-btn').disabled=true;
+  const { error }=await sb.auth.resetPasswordForEmail(email,{
+    redirectTo:window.location.origin+window.location.pathname
+  });
+  if(error){ setMsg('fp-msg','msg-err','Errore: '+error.message); $('fp-btn').disabled=false; return; }
+  setMsg('fp-msg','msg-ok','Se l\'email \u00e8 registrata, riceverai un link a breve. Controlla anche la cartella spam.');
+  fpCooldown=60;
+  const iv=setInterval(()=>{
+    fpCooldown--;
+    $('fp-btn').textContent=fpCooldown>0?'Riprova tra '+fpCooldown+'s':'Invia link di recupero';
+    if(fpCooldown<=0){ clearInterval(iv); $('fp-btn').disabled=false; }
+  },1000);
+}
+async function doResetPassword(){
+  const p1=$('rp-pass1').value, p2=$('rp-pass2').value;
+  if(!p1||!p2){ setMsg('rp-msg','msg-err','Compila entrambi i campi.'); return; }
+  if(p1!==p2){ setMsg('rp-msg','msg-err','Le due password non coincidono.'); return; }
+  if(p1.length<6){ setMsg('rp-msg','msg-err','La password deve avere almeno 6 caratteri.'); return; }
+  setMsg('rp-msg','msg-load','<div class="spinner"></div> Salvataggio\u2026');
+  const { data, error }=await sb.auth.updateUser({ password:p1 });
+  if(error){
+    if(error.message.toLowerCase().includes('expired')||error.message.toLowerCase().includes('invalid')||error.message.toLowerCase().includes('session')){
+      setMsg('rp-msg','msg-err','Il link \u00e8 scaduto o non \u00e8 pi\u00f9 valido. <span class="btn-gho" style="padding:0" onclick="showForgotPassword()">Richiedine uno nuovo</span>');
+    } else { setMsg('rp-msg','msg-err','Errore: '+error.message); }
+    return;
+  }
+  isRecoveryMode=false;
+  if(window.history.replaceState) window.history.replaceState(null,null,window.location.pathname);
+  toast('Password aggiornata');
+  if(data.user) await onLoggedIn(data.user);
+  else { showLogin(); setMsg('login-msg','msg-ok','Password aggiornata. Accedi con la nuova password.'); }
+}
 async function doLogin(){
   const email=$('login-email').value.trim(), pass=$('login-pass').value;
   if(!email||!pass){ setMsg('login-msg','msg-err','Inserisci email e password.'); return; }
