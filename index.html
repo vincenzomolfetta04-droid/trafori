@@ -1102,7 +1102,7 @@ function generaContenuti(){
   const eurIt=n=>'€'+Number(n).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
   const trf=editingTRF||step1TRF||'{{TRF}}';
   const condTxt=condizione==='usato'?'Usato':'Nuovo';
-  const difTxt=(sano===false&&dif)?` (Difetto presente: ${dif})`:'';
+  const difTxt=(sano===false&&dif)?` (Difetto presente: ${dif}📸)`:'';
   const listino=parseFloat($('listino').value);
   // --- corpo descrizione ---
   let d=`AFFARE: ${cat}${fit?` vestibilità ${lcFirst(fit)}`:''}.${b?` ${b}.`:''} Condizione: ${condTxt}${difTxt}\n`;
@@ -1125,7 +1125,7 @@ function generaContenuti(){
   const GEN_VAR={'Donna':'Femminile','Uomo':'Maschile','Unisex':'Unisex','Bambino':'Bimbo'};
   const tagU=(tag||'').toUpperCase();
   const tagBand=/XXS|XS|^S$/.test(tagU)?'taglia piccola':/^M$|^L$/.test(tagU)?'taglia media':/XL|XXL|3XL/.test(tagU)?'taglia grande':'';
-  const chiusura=`\nSiamo presenti online e offline con 5 Outlet Store in Puglia, Italia\n Spedizione rapida\n Disponibile per Aiutarti!`;
+  const chiusura=`\n🤝Siamo presenti online e offline con 5 Outlet Store in Puglia, Italia\n📦 Spedizione rapida\n💬 Disponibile per Aiutarti!`;
   const cand=[CAT_EN[cat], tagBand, SEA_ADJ[sta], GEN_VAR[gen], 'moda','occasione','stile','tendenza','low cost'];
   const corpoNorm=norm(d+chiusura);
   const kw=[]; cand.forEach(x=>{ if(!x) return; const t=String(x).trim(); if(!t) return; if(corpoNorm.includes(norm(t))) return; if(kw.some(k=>k.toLowerCase()===t.toLowerCase())) return; kw.push(t); });
@@ -1243,7 +1243,7 @@ function apriArticolo(trf){
         <div class="pc pc-min"><div class="pc-lbl" style="color:var(--err)">Minimo</div><div class="pc-val" style="font-size:18px">${it.prezzo_min?fmt(it.prezzo_min):'—'}</div></div>
       </div>
     </div>
-    ${it.descrizione?`<div class="card"><div class="card-t">Descrizione</div><div style="font-size:13.5px;white-space:pre-wrap;line-height:1.6">${esc(it.descrizione)}</div></div>`:''}
+    ${it.descrizione?`<div class="card"><div class="card-t">Descrizione</div><div style="font-size:13.5px;white-space:pre-wrap;line-height:1.6">${esc(it.descrizione)}</div><button class="btn btn-w" style="margin-top:10px" onclick="copiaDescrizioneItem('${it.trf}')">📋 Copia descrizione</button></div>`:''}
     <div class="row-btns">
       <button class="btn" onclick="caricaInForm('${it.trf}')">✏️ ${it.stato==='bozza'?'Completa':'Modifica'}</button>
       <button class="btn btn-pri" onclick="apriVendita('${it.trf}')">📊 Registra esito</button>
@@ -1794,6 +1794,14 @@ function copiaDescrizione(){
     navigator.clipboard.writeText(t).then(()=>toast('Descrizione copiata')).catch(()=>fallbackCopy(t));
   } else fallbackCopy(t);
 }
+function copiaDescrizioneItem(trf){
+  const it=(CACHE_ITEMS||[]).find(x=>x.trf===trf);
+  const t=it&&it.descrizione?it.descrizione:'';
+  if(!t){ toast('Nessuna descrizione per questo articolo.'); return; }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(()=>toast('Descrizione copiata')).catch(()=>fallbackCopy(t));
+  } else fallbackCopy(t);
+}
 function fallbackCopy(t){
   const ta=document.createElement('textarea'); ta.value=t; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.focus(); ta.select();
   try{ document.execCommand('copy'); toast('Descrizione copiata'); }catch(e){ toast('Copia non riuscita'); }
@@ -1821,7 +1829,7 @@ function csvMagic(items){
   const rows=items.map(it=>{
     const foto=fotoArr(it);
     const fc=Array.from({length:NFOTO},(_,i)=>foto[i]||'');
-    return [it.trf,it.brand,it.codice_brand,it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),numc(it.mis_girovita),numc(it.mis_torace),it.mis_extra,it.colore,it.materiale,it.fit,it.stagione,cap(it.condizione),it.con_cartellino?'Sì':'No',it.difetto_testo||'',numc(it.prezzo_target),numc(it.costo),it.titolo,(it.descrizione||''),it.hashtag||'',...fc];
+    return [it.trf,it.brand,it.codice_brand,it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),numc(it.mis_girovita),numc(it.mis_torace),it.mis_extra,it.colore,it.materiale,it.fit,it.stagione,cap(it.condizione),it.con_cartellino?'Sì':'No',it.difetto_testo||'',numc(it.prezzo_target),numc(it.costo),it.titolo,it.trf,it.hashtag||'',...fc];
   });
   return [head.join(';')].concat(rows.map(r=>r.map(cell).join(';'))).join('\r\n');
 }
