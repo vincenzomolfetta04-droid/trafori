@@ -57,6 +57,10 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
 .field-quick input:focus,.field-quick select:focus{box-shadow:0 0 0 3.5px rgba(209,120,108,.18);border-color:var(--quickink)}
 input.filled,select.filled,textarea.filled{background:#eafaf2;border-color:#8ed3aa}
 input.filled:focus,select.filled:focus,textarea.filled:focus{box-shadow:0 0 0 3.5px rgba(29,138,78,.16);border-color:#1d8a4e}
+input.opt-empty,select.opt-empty,textarea.opt-empty{background:#fdf4e8;border-color:#e8d4b6}
+input.opt-empty:focus,select.opt-empty:focus,textarea.opt-empty:focus{box-shadow:0 0 0 3.5px rgba(178,94,0,.12);border-color:#d9a253}
+input.req-empty,select.req-empty,textarea.req-empty{background:#ffe0e0;border-color:#e59a9a}
+input.req-empty:focus,select.req-empty:focus,textarea.req-empty:focus{box-shadow:0 0 0 3.5px rgba(200,40,40,.15);border-color:#d95a5a}
 .ac{position:relative}
 .ac-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:var(--r2);box-shadow:var(--shadow2);z-index:30;max-height:230px;overflow-y:auto;display:none}
 .ac-list.show{display:block}
@@ -754,7 +758,15 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.ac')) document.que
 const FILL_IDS=['brand','codiceBrand','categoria','genere','taglia','mis_spalle','mis_lunghezza','mis_girovita','mis_torace','mis_extra','colore','materiale','fit','stagione','listino','costo','fornitore','difettoTesto'];
 const Q_IDS=['q-brand','q-codice','q-listino','q-composizione','q-taglia','q-mspalle','q-mlung','q-girovita','q-torace','q-mextra','q-difetto'];
 const FILL_ALL=FILL_IDS.concat(Q_IDS);
-function markFilled(el){ if(!el) return; el.classList.toggle('filled',(el.value||'').trim()!==''); }
+const REQ_IDS=['brand','codiceBrand','costo','stagione','categoria','colore','q-codice'];
+function markFilled(el){
+  if(!el) return;
+  const filled=(el.value||'').trim()!=='';
+  const req=REQ_IDS.indexOf(el.id)>=0;
+  el.classList.toggle('filled',filled);
+  el.classList.toggle('req-empty',!filled&&req);
+  el.classList.toggle('opt-empty',!filled&&!req);
+}
 function applyFilledAll(){ FILL_IDS.forEach(id=>{ const el=$(id); if(el) markFilled(el); }); }
 let filledAttached=false;
 function attachFilled(){
@@ -1145,6 +1157,9 @@ async function salvaArticolo(){
   if(!brand){ toast('Il brand è obbligatorio.'); return; }
   if(!$('codiceBrand').value.trim()){ toast('Il codice articolo è obbligatorio.'); $('codiceBrand').scrollIntoView({behavior:'smooth',block:'center'}); $('codiceBrand').focus(); return; }
   if(!(parseFloat($('costo').value)>0)){ toast('Il costo d\'acquisto è obbligatorio.'); $('costo').scrollIntoView({behavior:'smooth',block:'center'}); $('costo').focus(); return; }
+  if(!$('categoria').value.trim()){ toast('La categoria è obbligatoria.'); $('categoria').scrollIntoView({behavior:'smooth',block:'center'}); $('categoria').focus(); return; }
+  if(!$('colore').value.trim()){ toast('Il colore è obbligatorio.'); $('colore').scrollIntoView({behavior:'smooth',block:'center'}); $('colore').focus(); return; }
+  if(!$('stagione').value.trim()){ toast('La stagione è obbligatoria.'); $('stagione').scrollIntoView({behavior:'smooth',block:'center'}); $('stagione').focus(); return; }
   if(!condizione){ toast('Scegli Nuovo o Usato.'); $('seg-cond').scrollIntoView({behavior:'smooth',block:'center'}); return; }
   if(!lastCalc||!lastCalc.target){ toast('Calcola prima i prezzi.'); return; }
   toast('Salvataggio…');
