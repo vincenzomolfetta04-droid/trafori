@@ -331,8 +331,9 @@ input.req-empty:focus,select.req-empty:focus,textarea.req-empty:focus{box-shadow
         <div class="field ac"><label>Brand *</label><input type="text" id="brand" autocomplete="off" oninput="acInput('brand','brand')" onfocus="acInput('brand','brand')" placeholder="es. Pinko"><div class="ac-list" id="ac-brand"></div></div>
         <div class="g2">
           <div class="field"><label>Codice articolo brand</label><input type="text" id="codiceBrand" placeholder="opzionale"></div>
-          <div class="field ac"><label>Categoria / Modello</label><input type="text" id="categoria" autocomplete="off" oninput="acInput('categoria','categoria')" onfocus="acInput('categoria','categoria')" placeholder="es. Jeans"><div class="ac-list" id="ac-categoria"></div></div>
+          <div class="field ac"><label>Reparto</label><input type="text" id="reparto" autocomplete="off" oninput="acInput('reparto','reparto')" onfocus="acInput('reparto','reparto')" placeholder="es. Abbigliamento"><div class="ac-list" id="ac-reparto"></div></div>
         </div>
+        <div class="field ac"><label>Categoria</label><input type="text" id="categoria" autocomplete="off" oninput="acInput('categoria','categoria')" onfocus="acInput('categoria','categoria')" placeholder="es. Jeans"><div class="ac-list" id="ac-categoria"></div></div>
         <div class="g2">
           <div class="field ac"><label>Genere</label><input type="text" id="genere" autocomplete="off" oninput="acInput('genere','genere')" onfocus="acInput('genere','genere')" placeholder="es. Donna"><div class="ac-list" id="ac-genere"></div></div>
           <div class="field ac"><label>Taglia</label><input type="text" id="taglia" autocomplete="off" oninput="acInput('taglia','taglia')" onfocus="acInput('taglia','taglia')" placeholder="es. M"><div class="ac-list" id="ac-taglia"></div></div>
@@ -447,12 +448,12 @@ input.req-empty:focus,select.req-empty:focus,textarea.req-empty:focus{box-shadow
       <button onclick="setFiltro('online',this)">Pronti/Online</button>
       <button onclick="setFiltro('venduto',this)">Venduti</button>
     </div>
-    <div id="mag-lista"></div>
-    <div class="row-btns" style="margin-top:8px">
+    <div class="row-btns">
       <button class="btn btn-sm" onclick="esportaNuovi()">⬇︎ CSV nuovi MagicStore</button>
       <button class="btn btn-sm" onclick="apriEsportaManuale()">☑︎ Scegli cosa esportare</button>
     </div>
-    <button class="btn btn-sm btn-w" style="margin-top:9px" onclick="esportaCSV('anagrafica',CACHE_ITEMS)">⬇︎ Esporta tutto (anagrafica completa)</button>
+    <button class="btn btn-sm btn-w" style="margin-top:9px;margin-bottom:14px" onclick="esportaCSV('anagrafica',CACHE_ITEMS)">⬇︎ Esporta tutto (anagrafica completa)</button>
+    <div id="mag-lista"></div>
   </div>
 
   <div id="v-clienti" class="view">
@@ -755,10 +756,10 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.ac')) document.que
 /* =====================================================================
    CAMPI VERDI QUANDO COMPILATI
    ===================================================================== */
-const FILL_IDS=['brand','codiceBrand','categoria','genere','taglia','mis_spalle','mis_lunghezza','mis_girovita','mis_torace','mis_extra','colore','materiale','fit','stagione','listino','costo','fornitore','difettoTesto'];
+const FILL_IDS=['brand','codiceBrand','reparto','categoria','genere','taglia','mis_spalle','mis_lunghezza','mis_girovita','mis_torace','mis_extra','colore','materiale','fit','stagione','listino','costo','fornitore','difettoTesto'];
 const Q_IDS=['q-brand','q-codice','q-listino','q-composizione','q-taglia','q-mspalle','q-mlung','q-girovita','q-torace','q-mextra','q-difetto'];
 const FILL_ALL=FILL_IDS.concat(Q_IDS);
-const REQ_IDS=['brand','codiceBrand','costo','stagione','categoria','colore','q-codice'];
+const REQ_IDS=['brand','codiceBrand','reparto','costo','stagione','categoria','colore','q-codice'];
 let lastGenDesc='', lastGenTitle='';
 function markFilled(el){
   if(!el) return;
@@ -986,7 +987,7 @@ document.querySelectorAll('#chips-difetti .chip').forEach(c=>c.addEventListener(
 
 function resetStep2(){
   editingTRF=null; lastCalc=null; photos2=[];
-  ['brand','codiceBrand','categoria','genere','taglia','mis_spalle','mis_lunghezza','mis_girovita','mis_torace','mis_extra','colore','materiale','fit','stagione','listino','costo','fornitore','difettoTesto','note','titolo','descrizione','hashtag'].forEach(id=>{ const el=$(id); if(el){ el.value=''; markFilled(el); } });
+  ['brand','codiceBrand','reparto','categoria','genere','taglia','mis_spalle','mis_lunghezza','mis_girovita','mis_torace','mis_extra','colore','materiale','fit','stagione','listino','costo','fornitore','difettoTesto','note','titolo','descrizione','hashtag'].forEach(id=>{ const el=$(id); if(el){ el.value=''; markFilled(el); } });
   condizione=null; conCartellino=null; tipoMat=null; sano=null; lastGenDesc=''; lastGenTitle='';
   [...$('seg-cond').children].forEach(x=>x.className=''); [...$('seg-cart').children].forEach(x=>x.className='');
   [...$('seg-tipomat').children].forEach(x=>x.className='');
@@ -1175,6 +1176,7 @@ async function salvaArticolo(){
   const brand=$('brand').value.trim();
   if(!brand){ toast('Il brand è obbligatorio.'); return; }
   if(!$('codiceBrand').value.trim()){ toast('Il codice articolo è obbligatorio.'); $('codiceBrand').scrollIntoView({behavior:'smooth',block:'center'}); $('codiceBrand').focus(); return; }
+  if(!$('reparto').value.trim()){ toast('Il reparto è obbligatorio.'); $('reparto').scrollIntoView({behavior:'smooth',block:'center'}); $('reparto').focus(); return; }
   if(!(parseFloat($('costo').value)>0)){ toast('Il costo d\'acquisto è obbligatorio.'); $('costo').scrollIntoView({behavior:'smooth',block:'center'}); $('costo').focus(); return; }
   if(!$('categoria').value.trim()){ toast('La categoria è obbligatoria.'); $('categoria').scrollIntoView({behavior:'smooth',block:'center'}); $('categoria').focus(); return; }
   if(!$('colore').value.trim()){ toast('Il colore è obbligatorio.'); $('colore').scrollIntoView({behavior:'smooth',block:'center'}); $('colore').focus(); return; }
@@ -1199,7 +1201,7 @@ async function salvaArticolo(){
   const ms=$('mis_spalle').value.trim(), ml=$('mis_lunghezza').value.trim(), mx=$('mis_extra').value.trim();
   const gv=$('mis_girovita').value.trim(), tr=$('mis_torace').value.trim();
   const rec={
-    trf, brand, codice_brand:$('codiceBrand').value.trim(), categoria:$('categoria').value.trim(),
+    trf, brand, codice_brand:$('codiceBrand').value.trim(), reparto:$('reparto').value.trim()||null, categoria:$('categoria').value.trim(),
     genere:$('genere').value.trim(), taglia:$('taglia').value.trim(),
     mis_spalle: ms?parseFloat(ms):null, mis_lunghezza: ml?parseFloat(ml):null, mis_girovita: gv?parseFloat(gv):null, mis_torace: tr?parseFloat(tr):null, mis_extra: mx||null,
     colore:$('colore').value.trim(), materiale:$('materiale').value.trim(), tipo_materiale:tipoMat,
@@ -1299,7 +1301,7 @@ function caricaInForm(trf){
   const it=(CACHE_ITEMS||[]).find(x=>x.trf===trf); if(!it) return;
   chiudiSheet(); switchView('nuovo'); setMode(2);
   editingTRF=trf; $('nuovo-titolo').textContent=it.stato==='bozza'?'Completa scheda':'Modifica'; $('trf-pill').textContent=trf;
-  $('brand').value=it.brand||''; $('codiceBrand').value=it.codice_brand||''; $('categoria').value=it.categoria||'';
+  $('brand').value=it.brand||''; $('codiceBrand').value=it.codice_brand||''; $('reparto').value=it.reparto||''; $('categoria').value=it.categoria||'';
   $('genere').value=it.genere||''; $('taglia').value=it.taglia||'';
   $('mis_spalle').value=it.mis_spalle!=null?it.mis_spalle:''; $('mis_lunghezza').value=it.mis_lunghezza!=null?it.mis_lunghezza:''; $('mis_girovita').value=it.mis_girovita!=null?it.mis_girovita:''; $('mis_torace').value=it.mis_torace!=null?it.mis_torace:''; $('mis_extra').value=it.mis_extra||'';
   $('colore').value=it.colore||''; $('materiale').value=it.materiale||''; $('fit').value=it.fit||''; $('stagione').value=it.stagione||'';
@@ -1637,13 +1639,16 @@ async function renderStats(){
   const valore=items.filter(i=>i.stato!=='venduto').reduce((s,i)=>s+(Number(i.prezzo_target)||0),0);
   const { data:vendite } = await sb.from('vendite').select('prezzo_vendita,registrato_da');
   const incasso=(vendite||[]).reduce((s,v)=>s+(Number(v.prezzo_vendita)||0),0);
+  const valoreAcq=items.filter(i=>i.stato!=='venduto').reduce((s,i)=>s+(Number(i.costo)||0),0);
+  const isTit=ME.ruolo==='titolare';
   let html=`<div class="stat-grid">
     <div class="stat"><div class="stat-n">${tot}</div><div class="stat-l">Capi totali</div></div>
     <div class="stat"><div class="stat-n">${daCompl}</div><div class="stat-l">Da completare</div></div>
     <div class="stat"><div class="stat-n">${online}</div><div class="stat-l">Pronti / Online</div></div>
     <div class="stat"><div class="stat-n">${venduti}</div><div class="stat-l">Venduti</div></div>
-    <div class="stat"><div class="stat-n" style="font-size:22px">${fmt(incasso)}</div><div class="stat-l">Incassato</div></div>
-    <div class="stat"><div class="stat-n" style="font-size:22px">${fmt(valore)}</div><div class="stat-l">Valore magazzino</div></div></div>`;
+    ${isTit?`<div class="stat"><div class="stat-n" style="font-size:22px">${fmt(incasso)}</div><div class="stat-l">Incassato</div></div>
+    <div class="stat"><div class="stat-n" style="font-size:22px">${fmt(valore)}</div><div class="stat-l">Valore magazzino (vendita)</div></div>
+    <div class="stat"><div class="stat-n" style="font-size:22px">${fmt(valoreAcq)}</div><div class="stat-l">Valore acquisto</div></div>`:''}</div>`;
   const tr=CACHE_RICHIESTE||[];
   const nOff=tr.filter(r=>r.ha_offerto).length, nOffAcc=tr.filter(r=>r.ha_offerto&&CONCLUSI.includes(r.stato)).length;
   let scE=0,scN=0; tr.filter(r=>CONCLUSI.includes(r.stato)).forEach(r=>{ const a=Number(r.prezzo_richiesto)||0,b=Number(r.prezzo_finale)||0; if(a>0&&b>0){ scE+=(a-b); scN++; } });
@@ -1653,7 +1658,7 @@ async function renderStats(){
       <div class="stat"><div class="stat-n">${tr.length}</div><div class="stat-l">Trattative</div></div>
       <div class="stat"><div class="stat-n">${nOff}</div><div class="stat-l">Offerte ricevute</div></div>
       <div class="stat"><div class="stat-n">${accPct}%</div><div class="stat-l">Offerte accettate</div></div>
-      <div class="stat"><div class="stat-n" style="font-size:22px">${scN?fmt(scE/scN):'—'}</div><div class="stat-l">Sconto medio concesso</div></div>
+      ${isTit?`<div class="stat"><div class="stat-n" style="font-size:22px">${scN?fmt(scE/scN):'—'}</div><div class="stat-l">Sconto medio concesso</div></div>`:''}
     </div></div>`;
   if(ME.ruolo==='titolare'){
     const perUser={}, vPerUser={};
@@ -1856,11 +1861,11 @@ function downloadCSV(name,content){ const blob=new Blob(['\ufeff'+content],{type
 function csvRows(items){
   const maxFoto=Math.max(1,...items.map(it=>fotoArr(it).length));
   const fotoCols=Array.from({length:maxFoto},(_,i)=>'Foto'+(i+1));
-  const head=['CodiceTRF','Stato','Data','Marca','CodiceBrand','Categoria','Genere','Taglia','Spalle','Lunghezza','MisureExtra','Colore','Materiale','TipoMateriale','Vestibilita','Stagione','Condizione','Cartellino','Sano','DifettoTesto','Fascia','Listino','Costo','Fornitore','Pubblicazione','Target','Minimo','Margine','Titolo','Descrizione','ParoleChiave',...fotoCols,'Note'];
+  const head=['CodiceTRF','Stato','Data','Marca','CodiceBrand','Reparto','Categoria','Genere','Taglia','Spalle','Lunghezza','MisureExtra','Colore','Materiale','TipoMateriale','Vestibilita','Stagione','Condizione','Cartellino','Sano','DifettoTesto','Fascia','Listino','Costo','Fornitore','Pubblicazione','Target','Minimo','Margine','Titolo','Descrizione','ParoleChiave',...fotoCols,'Note'];
   const rows=items.map(it=>{
     const foto=fotoArr(it);
     const fotoCells=Array.from({length:maxFoto},(_,i)=>foto[i]||'');
-    return [it.trf,it.stato,(it.creato_il||'').slice(0,10),it.brand,it.codice_brand,it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),it.mis_extra,it.colore,it.materiale,it.tipo_materiale,it.fit,it.stagione,it.condizione,it.con_cartellino?'Sì':'No',it.sano?'Sì':'No',it.difetto_testo,it.fascia_key,numc(it.listino),numc(it.costo),it.fornitore,numc(it.prezzo_pub),numc(it.prezzo_target),numc(it.prezzo_min),numc(it.margine),it.titolo,(it.descrizione||''),it.hashtag,...fotoCells,it.note];
+    return [it.trf,it.stato,(it.creato_il||'').slice(0,10),it.brand,it.codice_brand,it.reparto,it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),it.mis_extra,it.colore,it.materiale,it.tipo_materiale,it.fit,it.stagione,it.condizione,it.con_cartellino?'Sì':'No',it.sano?'Sì':'No',it.difetto_testo,it.fascia_key,numc(it.listino),numc(it.costo),it.fornitore,numc(it.prezzo_pub),numc(it.prezzo_target),numc(it.prezzo_min),numc(it.margine),it.titolo,(it.descrizione||''),it.hashtag,...fotoCells,it.note];
   });
   return [head.join(';')].concat(rows.map(r=>r.map(cell).join(';'))).join('\r\n');
 }
@@ -1868,11 +1873,11 @@ function csvMagic(items){
   const NFOTO=Math.min(8,Math.max(1,...items.map(it=>fotoArr(it).length)));
   const cap=x=>x?x.charAt(0).toUpperCase()+x.slice(1):'';
   const fotoCols=Array.from({length:NFOTO},(_,i)=>'Foto'+(i+1));
-  const head=['CODICETRF','Marca','CodiceBrand','Categoria','Genere','Taglia','Spalle','Lunghezza','Girovita','Torace','Misureextra','Colore','Materiale','Vestibilità','Stagione','Condizione','Cartellino','Difetto','Target',"Costo d'acquisto",'Titolo','Descrizione','ParoleChiave',...fotoCols];
+  const head=['CODICETRF','Marca','CodiceBrand','Reparto','Categoria','Genere','Taglia','Spalle','Lunghezza','Girovita','Torace','Misureextra','Colore','Materiale','Vestibilità','Stagione','Condizione','Cartellino','Difetto','PrezzoConsigliato','Target',"Costo d'acquisto",'Titolo','Descrizione','ParoleChiave',...fotoCols];
   const rows=items.map(it=>{
     const foto=fotoArr(it);
     const fc=Array.from({length:NFOTO},(_,i)=>foto[i]||'');
-    return [it.trf,it.brand,it.codice_brand,it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),numc(it.mis_girovita),numc(it.mis_torace),it.mis_extra,it.colore,it.materiale,it.fit,it.stagione,cap(it.condizione),it.con_cartellino?'Sì':'No',it.difetto_testo||'',numc(it.prezzo_target),numc(it.costo),it.titolo,it.trf,it.hashtag||'',...fc];
+    return [it.trf,it.brand,it.codice_brand,it.reparto||'',it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),numc(it.mis_girovita),numc(it.mis_torace),it.mis_extra,it.colore,it.materiale,it.fit,it.stagione,cap(it.condizione),it.con_cartellino?'Sì':'No',it.difetto_testo||'',numc(it.listino),numc(it.prezzo_target),numc(it.costo),it.titolo,it.trf,it.hashtag||'',...fc];
   });
   return [head.join(';')].concat(rows.map(r=>r.map(cell).join(';'))).join('\r\n');
 }
