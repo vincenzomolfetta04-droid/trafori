@@ -1873,11 +1873,11 @@ function csvMagic(items){
   const NFOTO=Math.min(8,Math.max(1,...items.map(it=>fotoArr(it).length)));
   const cap=x=>x?x.charAt(0).toUpperCase()+x.slice(1):'';
   const fotoCols=Array.from({length:NFOTO},(_,i)=>'Foto'+(i+1));
-  const head=['CODICETRF','Marca','CodiceBrand','Reparto','Categoria','Genere','Taglia','Spalle','Lunghezza','Girovita','Torace','Misureextra','Colore','Materiale','Vestibilità','Stagione','Condizione','Cartellino','Difetto','PrezzoConsigliato','Target',"Costo d'acquisto",'Titolo','Descrizione','ParoleChiave',...fotoCols];
+  const head=['CODICETRF','Marca','CodiceBrand','Reparto','Categoria','Genere','Taglia','Spalle','Lunghezza','Girovita','Torace','Misureextra','Colore','Materiale','Vestibilità','Stagione','Condizione','Cartellino','Difetto','PrezzoConsigliato','Target',"Costo d'acquisto",'Titolo','Descrizione','ParoleChiave','IMPERFECT',...fotoCols];
   const rows=items.map(it=>{
     const foto=fotoArr(it);
     const fc=Array.from({length:NFOTO},(_,i)=>foto[i]||'');
-    return [it.trf,it.brand,it.codice_brand,it.reparto||'',it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),numc(it.mis_girovita),numc(it.mis_torace),it.mis_extra,it.colore,it.materiale,it.fit,it.stagione,cap(it.condizione),it.con_cartellino?'Sì':'No',it.difetto_testo||'',numc(it.listino),numc(it.prezzo_target),numc(it.costo),it.titolo,it.trf,it.hashtag||'',...fc];
+    return [it.trf,it.brand,it.codice_brand,it.reparto||'',it.categoria,it.genere,it.taglia,numc(it.mis_spalle),numc(it.mis_lunghezza),numc(it.mis_girovita),numc(it.mis_torace),it.mis_extra,it.colore,it.materiale,it.fit,it.stagione,cap(it.condizione),it.con_cartellino?'Sì':'No',it.difetto_testo||'',numc(it.listino),numc(it.prezzo_target),numc(it.costo),it.titolo,it.trf,it.hashtag||'','IMPERFECT',...fc];
   });
   return [head.join(';')].concat(rows.map(r=>r.map(cell).join(';'))).join('\r\n');
 }
