@@ -1174,17 +1174,20 @@ function generaContenuti(silent){
    ===================================================================== */
 async function salvaArticolo(){
   const brand=$('brand').value.trim();
-  if(!brand){ toast('Il brand è obbligatorio.'); return; }
-  if(!$('codiceBrand').value.trim()){ toast('Il codice articolo è obbligatorio.'); $('codiceBrand').scrollIntoView({behavior:'smooth',block:'center'}); $('codiceBrand').focus(); return; }
-  if(!$('reparto').value.trim()){ toast('Il reparto è obbligatorio.'); $('reparto').scrollIntoView({behavior:'smooth',block:'center'}); $('reparto').focus(); return; }
-  if(!(parseFloat($('costo').value)>0)){ toast('Il costo d\'acquisto è obbligatorio.'); $('costo').scrollIntoView({behavior:'smooth',block:'center'}); $('costo').focus(); return; }
-  if(!$('categoria').value.trim()){ toast('La categoria è obbligatoria.'); $('categoria').scrollIntoView({behavior:'smooth',block:'center'}); $('categoria').focus(); return; }
-  if(!$('colore').value.trim()){ toast('Il colore è obbligatorio.'); $('colore').scrollIntoView({behavior:'smooth',block:'center'}); $('colore').focus(); return; }
-  if(!$('stagione').value.trim()){ toast('La stagione è obbligatoria.'); $('stagione').scrollIntoView({behavior:'smooth',block:'center'}); $('stagione').focus(); return; }
-  if(!condizione){ toast('Scegli Nuovo o Usato.'); $('seg-cond').scrollIntoView({behavior:'smooth',block:'center'}); return; }
-  if(!lastCalc||!lastCalc.target){ toast('Calcola prima i prezzi.'); return; }
+  const isBozza=$('stato').value==='bozza';
+  if(!isBozza){
+    if(!brand){ toast('Il brand è obbligatorio.'); return; }
+    if(!$('codiceBrand').value.trim()){ toast('Il codice articolo è obbligatorio.'); $('codiceBrand').scrollIntoView({behavior:'smooth',block:'center'}); $('codiceBrand').focus(); return; }
+    if(!$('reparto').value.trim()){ toast('Il reparto è obbligatorio.'); $('reparto').scrollIntoView({behavior:'smooth',block:'center'}); $('reparto').focus(); return; }
+    if(!(parseFloat($('costo').value)>0)){ toast('Il costo d\'acquisto è obbligatorio.'); $('costo').scrollIntoView({behavior:'smooth',block:'center'}); $('costo').focus(); return; }
+    if(!$('categoria').value.trim()){ toast('La categoria è obbligatoria.'); $('categoria').scrollIntoView({behavior:'smooth',block:'center'}); $('categoria').focus(); return; }
+    if(!$('colore').value.trim()){ toast('Il colore è obbligatorio.'); $('colore').scrollIntoView({behavior:'smooth',block:'center'}); $('colore').focus(); return; }
+    if(!$('stagione').value.trim()){ toast('La stagione è obbligatoria.'); $('stagione').scrollIntoView({behavior:'smooth',block:'center'}); $('stagione').focus(); return; }
+    if(!condizione){ toast('Scegli Nuovo o Usato.'); $('seg-cond').scrollIntoView({behavior:'smooth',block:'center'}); return; }
+    if(!lastCalc||!lastCalc.target){ toast('Calcola prima i prezzi.'); return; }
+  }
   // Aggiorna titolo/descrizione con gli ultimi dati dei campi
-  if(lastGenDesc!==''){
+  if(lastGenDesc!=='' && brand){
     const manuale=($('descrizione').value!==lastGenDesc);
     if(!manuale){ generaContenuti(true); }
     else {
@@ -1200,17 +1203,18 @@ async function salvaArticolo(){
   const chips=[...document.querySelectorAll('#chips-difetti .chip.on')].map(c=>c.textContent.trim()).join(' | ');
   const ms=$('mis_spalle').value.trim(), ml=$('mis_lunghezza').value.trim(), mx=$('mis_extra').value.trim();
   const gv=$('mis_girovita').value.trim(), tr=$('mis_torace').value.trim();
+  const lc=lastCalc||{};
   const rec={
-    trf, brand, codice_brand:$('codiceBrand').value.trim(), reparto:$('reparto').value.trim()||null, categoria:$('categoria').value.trim(),
+    trf, brand:brand||null, codice_brand:$('codiceBrand').value.trim()||null, reparto:$('reparto').value.trim()||null, categoria:$('categoria').value.trim()||null,
     genere:$('genere').value.trim(), taglia:$('taglia').value.trim(),
     mis_spalle: ms?parseFloat(ms):null, mis_lunghezza: ml?parseFloat(ml):null, mis_girovita: gv?parseFloat(gv):null, mis_torace: tr?parseFloat(tr):null, mis_extra: mx||null,
     colore:$('colore').value.trim(), materiale:$('materiale').value.trim(), tipo_materiale:tipoMat,
     fit:$('fit').value.trim(), stagione:$('stagione').value.trim(), condizione, con_cartellino:!!conCartellino,
     sano, dif_visibilita:sano?null:$('visibilita').value, dif_entita:sano?null:$('entita').value,
-    dif_tipi:chips, difetto_testo:$('difettoTesto').value.trim()||null, fascia_key:lastCalc.fasciaKey,
-    listino:lastCalc.listino, fonte_listino:$('listino').dataset.fonte||'manuale',
+    dif_tipi:chips, difetto_testo:$('difettoTesto').value.trim()||null, fascia_key:lc.fasciaKey||null,
+    listino:(lc.listino!=null?lc.listino:(parseFloat($('listino').value)||null)), fonte_listino:$('listino').dataset.fonte||'manuale',
     costo:parseFloat($('costo').value)||null, fornitore:$('fornitore').value.trim(),
-    prezzo_pub:lastCalc.pub, prezzo_target:lastCalc.target, prezzo_min:lastCalc.min, margine:lastCalc.margine||null,
+    prezzo_pub:(lc.pub!=null?lc.pub:null), prezzo_target:(lc.target!=null?lc.target:null), prezzo_min:(lc.min!=null?lc.min:null), margine:lc.margine||null,
     titolo:$('titolo').value.trim(), descrizione:descr, hashtag:$('hashtag').value.trim(), note:$('note').value.trim(),
     foto_urls: fotoUrls.length?JSON.stringify(fotoUrls):null,
     stato:$('stato').value, modificato_da:ME.id, modificato_il:new Date().toISOString()
