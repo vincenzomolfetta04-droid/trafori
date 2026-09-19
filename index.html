@@ -315,6 +315,7 @@ input.req-empty:focus,select.req-empty:focus,textarea.req-empty:focus{box-shadow
         <div class="field field-quick" style="margin-top:10px"><label>Misure aggiuntive</label><input type="text" id="q-mextra" placeholder="Manica: 7 cm"></div>
         <p class="hint" style="margin-top:5px">Spalle, lunghezza, girovita e torace: solo numero (cm). Aggiuntive: testo libero, es. Manica: 7 cm</p>
         <div class="field field-quick" style="margin-top:13px"><label>Difetto (se presente)</label><input type="text" id="q-difetto" placeholder="es. Macchia sul polsino"><p class="hint">Lascia vuoto se il capo è sano.</p></div>
+        <div class="field field-quick" style="margin-top:13px"><label>Note libere</label><textarea id="q-note" rows="3" placeholder="Annotazioni libere sul capo…" style="width:100%;resize:vertical"></textarea></div>
       </div>
       <button class="btn btn-pri btn-w btn-lg" onclick="salvaStep1()">Salva e prossimo TRF →</button>
       <p class="hint" style="text-align:center;margin-top:10px">Resti qui per catalogare il capo successivo.</p>
@@ -757,7 +758,7 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.ac')) document.que
    CAMPI VERDI QUANDO COMPILATI
    ===================================================================== */
 const FILL_IDS=['brand','codiceBrand','reparto','categoria','genere','taglia','mis_spalle','mis_lunghezza','mis_girovita','mis_torace','mis_extra','colore','materiale','fit','stagione','listino','costo','fornitore','difettoTesto'];
-const Q_IDS=['q-brand','q-codice','q-listino','q-composizione','q-taglia','q-mspalle','q-mlung','q-girovita','q-torace','q-mextra','q-difetto'];
+const Q_IDS=['q-brand','q-codice','q-listino','q-composizione','q-taglia','q-mspalle','q-mlung','q-girovita','q-torace','q-mextra','q-difetto','q-note'];
 const FILL_ALL=FILL_IDS.concat(Q_IDS);
 const REQ_IDS=['brand','codiceBrand','reparto','costo','stagione','categoria','colore','q-codice'];
 let lastGenDesc='', lastGenTitle='';
@@ -951,6 +952,7 @@ async function salvaStep1(){
     condizione: condQuick||null,
     sano: !$('q-difetto').value.trim(),
     difetto_testo:$('q-difetto').value.trim()||null,
+    note:$('q-note').value.trim()||null,
     foto_urls: fotoUrls.length?JSON.stringify(fotoUrls):null,
     creato_da:ME.id, modificato_da:ME.id, modificato_il:new Date().toISOString()
   };
@@ -959,7 +961,7 @@ async function salvaStep1(){
   const { error } = await sb.from('articoli').insert(rec);
   if(error){ toast('Errore: '+error.message); return; }
   toast('Salvato '+trf);
-  ['q-brand','q-codice','q-listino','q-composizione','q-taglia','q-mspalle','q-mlung','q-girovita','q-torace','q-mextra','q-difetto'].forEach(id=>{ const el=$(id); if(el){ el.value=''; markFilled(el); } });
+  ['q-brand','q-codice','q-listino','q-composizione','q-taglia','q-mspalle','q-mlung','q-girovita','q-torace','q-mextra','q-difetto','q-note'].forEach(id=>{ const el=$(id); if(el){ el.value=''; markFilled(el); } });
   condQuick=null; [...$('seg-cond1').children].forEach(x=>x.className='');
   photos1=[]; renderThumbs();
   resetStep2();
@@ -1136,8 +1138,8 @@ function generaContenuti(silent){
   const difTxt=(sano===false&&dif)?` (Difetto presente: ${dif}📸)`:'';
   const listino=parseFloat($('listino').value);
   // --- corpo descrizione ---
-  let d=`AFFARE: ${cat}${fit?` vestibilità ${lcFirst(fit)}`:''}.${b?` ${b}.`:''} Condizione: ${condTxt}${difTxt}\n`;
-  if(note) d+=`~~${note}~~\n`;
+  let d=`AFFARE: ${cat}${fit?` vestibilità ${lcFirst(fit)}`:''}${b?' '+b:''}. Condizione: ${condTxt}${difTxt}\n`;
+  if(note) d+=`${note}\n`;
   d+=`\n`;
   if(listino>0) d+=`Prezzo consigliato di circa: ${eurIt(listino)}\n`;
   d+=`-Taglia: ${tag||'-'}\n`;
